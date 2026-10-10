@@ -382,6 +382,12 @@ canvas#gl.slowmo{filter:saturate(.7) hue-rotate(-18deg) contrast(1.08)}
 @media(max-width:1100px){.seg button{padding:8px 10px;font-size:13px}.row{gap:16px}.page{padding:20px 22px}}
 @media(max-height:780px){.hero-s,.tipbox{display:none}.stats{margin-top:12px}}
 @media(max-width:900px){#buyGrid{grid-template-columns:repeat(2,1fr)}#nav{width:260px}.srow>span:first-child{width:130px}}
+#netInfo{position:fixed;left:50%;top:84px;transform:translateX(-50%);z-index:11;font-size:12px;letter-spacing:.18em;color:rgba(255,255,255,.55);text-shadow:0 1px 2px #000;pointer-events:none}
+.olsel{background:#141a27;border:1px solid var(--line);color:#fff;border-radius:6px;padding:10px 14px;font-family:var(--font);font-size:16px;letter-spacing:.08em;min-width:260px}
+.ollbl{display:block;font-size:13px;letter-spacing:.24em;color:var(--acc);font-weight:700;margin-bottom:9px}
+.olrow{display:flex;gap:18px;align-items:flex-end;flex-wrap:wrap}.olrow .startbtn{flex:1;min-width:260px}.oljoin{min-width:260px}.oljoin .srow input{width:130px;flex:none;text-transform:uppercase;text-align:center;font-weight:700;font-size:22px;letter-spacing:.3em}
+.olcode{display:flex;align-items:center;gap:18px;letter-spacing:.2em;color:var(--dim);margin-bottom:14px}.olcode b{font-family:var(--disp);font-size:46px;letter-spacing:.3em;color:var(--acc);text-shadow:0 0 18px rgba(255,170,30,.5)}
+.olp{padding:9px 14px;border:1px solid var(--line);border-radius:6px;margin-bottom:6px;background:rgba(255,255,255,.03);font-weight:700;letter-spacing:.1em}.olp.dim{color:var(--dim)}
 </style>
 </head>
 <body>
@@ -389,7 +395,7 @@ canvas#gl.slowmo{filter:saturate(.7) hue-rotate(-18deg) contrast(1.08)}
 
 <!-- ======= SPLASH ======= -->
 <div id="toasts"></div>
-<div id="smokeOv"></div>
+<div id="smokeOv"></div><div id="netInfo" class="hidden"></div>
 <div id="splash"><div class="s1">STRIKE<br>FORCE</div><div class="s2">ZERO HOUR</div><div class="s3">PAINA MISTÄ TAHANSA ALOITTAAKSESI</div><div class="s4">TAKTINEN JOUKKUE-FPS · SELAIMESSA</div></div>
 
 <!-- ======= MENU ======= -->
@@ -403,11 +409,12 @@ canvas#gl.slowmo{filter:saturate(.7) hue-rotate(-18deg) contrast(1.08)}
     </div>
     <button class="nbtn active" data-pg="home"><small>01</small>Koti</button>
     <button class="nbtn" data-pg="play"><small>02</small>Pelaa</button>
-    <button class="nbtn" data-pg="profile"><small>03</small>Profiili</button>
-    <button class="nbtn" data-pg="settings"><small>04</small>Asetukset</button>
-    <button class="nbtn" data-pg="controls"><small>05</small>Ohjaimet</button>
-    <button class="nbtn" data-pg="about"><small>06</small>Tietoa</button>
-    <div id="navfoot"><span>v1.0 · TAKTINEN FPS</span><button id="musicBtn"><canvas id="eq" width="28" height="14"></canvas>MUSIIKKI</button></div>
+    <button class="nbtn" data-pg="online"><small>03</small>Moninpeli</button>
+    <button class="nbtn" data-pg="profile"><small>04</small>Profiili</button>
+    <button class="nbtn" data-pg="settings"><small>05</small>Asetukset</button>
+    <button class="nbtn" data-pg="controls"><small>06</small>Ohjaimet</button>
+    <button class="nbtn" data-pg="about"><small>07</small>Tietoa</button>
+    <div id="navfoot"><span>v1.1 · MONINPELI</span><button id="musicBtn"><canvas id="eq" width="28" height="14"></canvas>MUSIIKKI</button></div>
     <div id="hint">↑↓ NAVIGOI · ENTER ALOITA · ESC KOTI</div>
   </div>
   <div id="content">
@@ -418,7 +425,7 @@ canvas#gl.slowmo{filter:saturate(.7) hue-rotate(-18deg) contrast(1.08)}
       <h1 id="homeName">PELAAJA</h1>
       <div class="hero-s">Pommin kuoletus · Tiimikuolemankamppailu · 3 karttaa</div>
       <button class="startbtn big" id="quickBtn">PIKAPELI<small id="quickSub"></small></button>
-      <div class="hero-row"><button class="btn2" id="customBtn">MUOKKAA PELIÄ</button><button class="btn2" id="setBtn2">ASETUKSET</button></div>
+      <div class="hero-row"><button class="btn2" id="customBtn">MUOKKAA PELIÄ</button><button class="btn2" id="onlineBtn">MONINPELI</button><button class="btn2" id="setBtn2">ASETUKSET</button></div>
       <div class="stats" id="statGrid"></div>
       <div class="lastm" id="lastMatch"></div>
       <div class="lastm" id="homeDaily"></div>
@@ -455,6 +462,34 @@ canvas#gl.slowmo{filter:saturate(.7) hue-rotate(-18deg) contrast(1.08)}
       </div>
       <div class="summary" id="playSummary"></div>
       <button class="startbtn" id="startBtn">ALOITA PELI</button>
+    </div>
+    <!-- ONLINE -->
+    <div class="page" id="pg-online">
+      <h2 class="pt">MONINPELI</h2>
+      <div class="psub">Pelaa kavereiden kanssa netissä · 5 vs 5 · botit täyttävät tyhjät paikat · vanhat bottipelit säilyvät Pelaa-sivulla</div>
+      <div id="olConfig">
+        <div class="sec"><label>PELITILA</label>
+          <div class="seg" id="olModeSeg"><button data-v="bomb" class="sel">POMMIN KUOLETUS</button><button data-v="dm">TIIMIKUOLEMANKAMPPAILU</button><button data-v="zombie">ZOMBIAALLOT ☣</button></div></div>
+        <div class="sec"><label>KARTTA</label><select id="olMap" class="olsel"></select></div>
+        <div class="sec row">
+          <div id="olSideWrap"><label class="ollbl">SINUN PUOLESI (muut jaetaan tasaisesti)</label><div class="seg" id="olSideSeg"><button data-v="CT" class="sel">VASTATERRORISTI</button><button data-v="T">TERRORISTI</button></div></div>
+          <div><label class="ollbl">BOTTIEN TASO</label><div class="seg" id="olDiffSeg"><button data-v="0">HELPPO</button><button data-v="1" class="sel">NORMAALI</button><button data-v="2">VAIKEA</button><button data-v="3">EKSPERTTI</button></div></div>
+          <div id="olWinsWrap"><label class="ollbl">VOITETTAVAT KIERROKSET</label><div class="seg" id="olWinsSeg"><button data-v="3">3</button><button data-v="5" class="sel">5</button><button data-v="8">8</button><button data-v="13">13</button></div></div>
+        </div>
+      </div>
+      <div id="olHome" class="sec">
+        <div class="olrow">
+          <button class="startbtn big" id="olCreate">LUO HUONE<small>Sinusta tulee isäntä · saat koodin jaettavaksi</small></button>
+          <div class="oljoin"><label class="ollbl">LIITY HUONEESEEN</label><div class="srow" style="border:none;padding:0"><input type="text" id="olCode" maxlength="6" placeholder="KOODI" autocomplete="off" spellcheck="false"><button class="btn2" id="olJoin">LIITY</button></div></div>
+        </div>
+      </div>
+      <div id="olLobbyBox" style="display:none">
+        <div class="olcode">HUONEEN KOODI<b id="olCodeTxt">—</b><button class="btn2 mini" id="olCopy">KOPIOI LINKKI</button></div>
+        <label class="ollbl">PELAAJAT HUONEESSA</label><div id="olPlayers"></div><div id="olInfo"></div>
+        <div class="olrow" style="margin-top:14px"><button class="startbtn big" id="olStart">ALOITA PELI<small>Tyhjät paikat täytetään boteilla · myöhemmin liittyvät pääsevät mukaan kesken pelin</small></button><button class="btn2" id="olLeave">POISTU HUONEESTA</button></div>
+      </div>
+      <div id="olStatus" class="hint2" style="margin-top:12px;min-height:20px"></div>
+      <div class="psub" style="margin-top:14px">Yhteys toimii suoraan pelaajien selainten välillä (WebRTC). Isännän selain pyörittää peliä ja botteja, joten isännän yhteys vaikuttaa kaikkien pingiin. Moninpelissä ei ole operaattorikykyjä eikä aseiden pudotusta.</div>
     </div>
     <!-- PROFILE -->
     <div class="page" id="pg-profile">
@@ -597,6 +632,7 @@ canvas#gl.slowmo{filter:saturate(.7) hue-rotate(-18deg) contrast(1.08)}
 <div id="clickGo" class="hidden"><span>KLIKKAA JATKAAKSESI</span></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.2/peerjs.min.js"></script>
 <script>
 'use strict';
 /* =====================================================================
@@ -1317,7 +1353,7 @@ const G = { mode: 'bomb', mapKey: 'dust', side: 'CT', botsPer: 5, diff: 1, winsN
 
 class Actor {
   constructor(name, team, isPlayer) {
-    this.name = name; this.team = team; this.isPlayer = !!isPlayer; this.x = 0; this.y = 0; this.z = 0; this.vx = 0; this.vz = 0; this.vy = 0; this.yaw = 0; this.pitch = 0;
+    this.nid = ++Actor.seq; this.name = name; this.team = team; this.isPlayer = !!isPlayer; this.x = 0; this.y = 0; this.z = 0; this.vx = 0; this.vz = 0; this.vy = 0; this.yaw = 0; this.pitch = 0;
     this.hp = 100; this.armor = 0; this.helmet = false; this.kit = false; this.alive = true; this.money = 800; this.kills = 0; this.deaths = 0; this.score = 0; this.r = .36; this.eye = 1.65;
     this.inv = { primary: null, secondary: null, he: 0, flash: 0, smoke: 0 }; this.ammo = {}; this.cur = 'knife'; this.last = 'knife';
     this.nextFire = 0; this.reloadT = 0; this.drawT = 0; this.shots = 0; this.lastShot = -9; this.flashT = 0; this.onGround = true; this.moveSpd = 0; this.stepD = 0; this.phase = 0;
@@ -1329,6 +1365,7 @@ class Actor {
   hasWeapon(id) { return id === 'knife' || this.inv.primary === id || this.inv.secondary === id || (WEAPONS[id] && WEAPONS[id].type === 'nade' && this.inv[id] > 0); }
 }
 
+Actor.seq = 0;
 /* ---------- Aselaatikko (geometria- ja materiaalivälimuistit) ---------- */
 const GC = {}, MC = {};
 const bgeo = (w, h, l) => { const k = w + 'x' + h + 'x' + l; return GC[k] || (GC[k] = new THREE.BoxGeometry(w, h, l)); };
@@ -1524,7 +1561,7 @@ function setBotGun(a, id) {
 /* ---------- Pudotetut aseet ---------- */
 const DROPS = [];
 function spawnDrop(a, o) {
-  o = o || {}; const id = o.wid || a.cur; if (!id || id === 'knife' || !WEAPONS[id] || WEAPONS[id].type === 'nade') return; const m = buildGun(id, false), fx = -Math.sin(a.yaw), fz = -Math.cos(a.yaw), th = !!o.throwDir;
+  if (NET.role !== 'off') return; o = o || {}; const id = o.wid || a.cur; if (!id || id === 'knife' || !WEAPONS[id] || WEAPONS[id].type === 'nade') return; const m = buildGun(id, false), fx = -Math.sin(a.yaw), fz = -Math.cos(a.yaw), th = !!o.throwDir;
   m.position.set(a.x + fx * (th ? .7 : .3), a.y + (th ? 1.3 : 1.2), a.z + fz * (th ? .7 : .3)); m.rotation.set(rnd(-.3, .3), a.yaw, rnd(-.4, .4)); scene.add(m);
   DROPS.push({ m, vx: fx * (th ? 4.2 : rnd(.5, 1.5)) + rnd(-.6, .6), vy: th ? 2.4 : rnd(1, 2.5), vz: fz * (th ? 4.2 : rnd(.5, 1.5)) + rnd(-.6, .6), rest: false, sx: rnd(-6, 6), t: 0, wid: id, am: o.am || (a.ammo && a.ammo[id]) || null, att: o.att || (a.att && a.att[id]) || null });
 }
@@ -1780,8 +1817,9 @@ const defuseTime = a => a.kit ? 3.5 : 6.5;
 
 /* ---------- Äänitapahtumat botteja varten ---------- */
 function emitNoise(x, z, r, team) {
+  if (NET.role === 'client') return;
   for (const b of ACT) {
-    if (b.isPlayer || !b.alive || b.team === team) continue; const d = Math.hypot(b.x - x, b.z - z);
+    if (!isBotA(b) || !b.alive || b.team === team) continue; const d = Math.hypot(b.x - x, b.z - z);
     if (d < r && !(b.ai.tgt && b.ai.seen < 1.5)) b.ai.heard = { x, z, t: 5 };
   }
 }
@@ -1789,7 +1827,7 @@ function emitNoise(x, z, r, team) {
 /* ---------- Ammunta ---------- */
 const _v = new THREE.Vector3();
 function performShot(a, ox, oy, oz, dx, dy, dz, w, spread, mx, my, mz) {
-  const n = w.pellets || 1;
+  const n = w.pellets || 1, pel = NET.role !== 'off' ? [] : null; _PEL = pel;
   const ul = Math.hypot(dx, dz) || 1, ux = -dz / ul, uz = dx / ul; // oikea vektori (uy = 0)
   const px = dy * uz, py = dz * ux - dx * uz, pz = -dy * ux; // v = d x u
   for (let i = 0; i < n; i++) {
@@ -1797,10 +1835,12 @@ function performShot(a, ox, oy, oz, dx, dy, dz, w, spread, mx, my, mz) {
     let ddx = dx + ux * c + px * s, ddy = dy + 0 * c + py * s, ddz = dz + uz * c + pz * s; const l = Math.hypot(ddx, ddy, ddz); ddx /= l; ddy /= l; ddz /= l;
     bulletTrace(a, ox, oy, oz, ddx, ddy, ddz, w, mx, my, mz);
   }
+  _PEL = null; if (pel) netShotOut(a, w, mx, my, mz, pel);
 }
 function bulletTrace(a, ox, oy, oz, dx, dy, dz, w, mx, my, mz) {
   const MAXD = 170, wh = rayWorld(ox, oy, oz, dx, dy, dz, MAXD), maxT = wh ? wh.t : MAXD, ah = rayActors(ox, oy, oz, dx, dy, dz, maxT, a.team);
   const t = ah ? ah.t : maxT, ex = ox + dx * t, ey = oy + dy * t, ez = oz + dz * t;
+  if (_PEL) _PEL.push([ex, ey, ez, ah ? 2 : wh ? 1 : 0, wh ? wh.nx : 0, wh ? wh.ny : 0, wh ? wh.nz : 0]);
   tracer(mx, my, mz, ex, ey, ez, a.isPlayer ? .018 : .026);
   if (ah) {
     damage(ah.a, a, w, ah.part, t, ex, ey, ez, dx, dz);
@@ -1812,10 +1852,11 @@ function bulletTrace(a, ox, oy, oz, dx, dy, dz, w, mx, my, mz) {
   }
 }
 function damage(v, k, w, part, dist, hx, hy, hz, dx, dz, direct) {
+  if (NET.role === 'client') { if (k && k.isPlayer && v.puppet && v.alive) { const hs0 = part === 'head'; spawnBlood(hx, hy, hz, -dx * .6, -dz * .6, hs0 ? 14 : 8, hs0); hitMarker(false, hs0); AU.hit(hs0); netSend({ t: 'hit', v: v.nid, w: { id: w.id, dmg: w.dmg, name: w.name }, part, dist, direct: direct ? 1 : 0, hx: r2(hx), hy: r2(hy), hz: r2(hz), dx: r2(dx), dz: r2(dz) }); } return; }
   if (!v.alive || v.protect > 0) return;
   let dmg = w.dmg * Math.pow(w.rm || 1, dist / 12);
   const hs = part === 'head';
-  if (!direct) { dmg *= hs ? 4 : part === 'legs' ? .75 : 1; if (!k.isPlayer) dmg *= DIFF[G.diff].dmg; }
+  if (!direct) { dmg *= hs ? 4 : part === 'legs' ? .75 : 1; if (!isHuman(k)) dmg *= DIFF[G.diff].dmg; }
   if (v.shieldT > 0) dmg *= v.shieldMul || .65;
   const frontal = !direct && frontalHit(v, k), sgHead = !direct && G.ttk === 'siege' && hs && !frontal;
   if (!direct && G.ttk === 'siege') { if (hs) dmg = Math.max(dmg, 150); else if (part !== 'legs') dmg *= 1.3; }
@@ -1823,9 +1864,9 @@ function damage(v, k, w, part, dist, hx, hy, hz, dx, dz, direct) {
   let hp = dmg;
   if (!sgHead && (v.armor > 0 && (part !== 'head' || v.helmet) && part !== 'legs' && !direct || (direct && v.armor > 0))) { hp = dmg * (w.ratio || .5); const ad = (dmg - hp) * .5; v.armor = Math.max(0, v.armor - ad); if (v.armor <= 0) v.helmet = false; }
   hp = Math.max(1, Math.round(hp)); v.hp -= hp; v.lastAttacker = k; v.hurtT = .25;
-  spawnBlood(hx, hy, hz, -dx * .6, -dz * .6, hs ? 14 : 8, hs);
+  spawnBlood(hx, hy, hz, -dx * .6, -dz * .6, hs ? 14 : 8, hs); netEv({ k: 'bl', x: r2(hx), y: r2(hy), z: r2(hz), dx: r2(-dx * .6), dz: r2(-dz * .6), n: hs ? 14 : 8, big: hs ? 1 : 0 }, null);
   if (v.isPlayer) { onPlayerHurt(k, hp); }
-  else { v.ai.alert = { x: k.x, z: k.z, t: 4 }; if (v.alive) AU.hurtAt(AU.spat(v.x, v.z, 8)); }
+  else { v.ai.alert = { x: k.x, z: k.z, t: 4 }; if (v.alive) AU.hurtAt(AU.spat(v.x, v.z, 8)); if (v.remote) netTo(v, { k: 'hurt', k2: k.nid, hp, x: r2(k.x), z: r2(k.z) }); }
   if (k.isPlayer) { hitMarker(false, hs); AU.hit(hs); k.ult = Math.min(100, (k.ult || 0) + Math.min(dmg, 100) * .05); }
   if (v.hp <= 0) killActor(v, k, w, hs);
 }
@@ -1833,11 +1874,13 @@ function killActor(v, k, w, hs) {
   v.deathType = hs ? 'head' : pick(['back', 'back', 'front', 'side', 'knee']); spawnDrop(v);
   v.hp = 0; v.alive = false; v.deaths++; v.deadT = 0; v.reloadT = 0; v.scoped = 0; v.plantProg = 0; v.defProg = 0; v.respawnT = 3;
   if (k && k.isPlayer && hs) k.hs = (k.hs || 0) + 1;
-  if (v.zombie) { Z.kills++; if (k && k.isPlayer) { k.money = Math.min(16000, k.money + v.zReward); trackEvent('zkill'); } else if (PLAYER) PLAYER.money = Math.min(16000, PLAYER.money + Math.round(v.zReward * .4)); }
+  if (v.zombie) { Z.kills++; for (const h of ACT) { if (!isHuman(h) || h.puppet) continue; if (h === k) { h.money = Math.min(16000, h.money + v.zReward); if (h.isPlayer) trackEvent('zkill'); } else h.money = Math.min(16000, h.money + Math.round(v.zReward * .4)); } }
   if (k && k !== v) { k.kills++; if (k.team !== v.team && !v.zombie) { k.money = Math.min(16000, k.money + (w.reward || 300)); } if (isDM()) G.dm.kills[k.team]++; armsKill(k, v, w); }
   if (k && k.isPlayer && k !== v && v.team !== k.team) { k.ult = Math.min(100, (k.ult || 0) + (v.zombie ? 4 : 16)); if (!v.zombie) { trackEvent('kill'); P.roundKills = (P.roundKills || 0) + 1; if (P.roundKills === 5) trackEvent('ace'); } if (hs) trackEvent('hs'); if (w && w.id === 'knife') trackEvent('knife'); if (w && w.id === 'awp') trackEvent('awp'); if (w && w.name === 'HE') trackEvent('he'); }
   recEvent('kill', v.x, v.y, v.z);
   addFeed(k, v, w, hs);
+  netEv({ k: 'kill', v: v.nid, k2: k ? k.nid : 0, sh: w ? (w.short || w.name || '?') : '', wid: w ? w.id : '', hs: hs ? 1 : 0, ty: v.deathType }, null);
+  if (v.remote) netTo(v, { k: 'died', k2: k ? k.nid : 0, sh: w ? (w.name || w.short || '?') : '?', hs: hs ? 1 : 0 });
   if (k && k.isPlayer) { hitMarker(true, hs); AU.hit(true); }
   AU.die(AU.spat(v.x, v.z, 10));
   decal('blood', { x: v.x, y: .01, z: v.z }, { x: 0, y: 1, z: 0 }, 1.6);
@@ -1899,8 +1942,10 @@ function knifeAttack(a, heavy) {
 /* ---------- Kranaatit ---------- */
 const GR = [];
 function throwGrenade(a, id, dx, dy, dz, speed) {
+  if (NET.role === 'client') { netSend({ t: 'throw', id, dx: r2(dx), dy: r2(dy), dz: r2(dz), sp: speed }); return; }
   const ey = a.y + a.eyeH() - .15; const m = buildGun(id, false); m.scale.setScalar(1.3); scene.add(m);
-  GR.push({ id, x: a.x + dx * .6, y: ey + dy * .6, z: a.z + dz * .6, vx: dx * speed + a.vx * .5, vy: dy * speed, vz: dz * speed + a.vz * .5, t: 0, fuse: id === 'he' ? 2.0 : id === 'flash' ? 1.6 : id === 'fire' ? 1.5 : 2.6, owner: a, mesh: m, rest: false, rx: rnd(TAU), spin: rnd(6, 12) });
+  GR.push({ id, x: a.x + dx * .6, y: ey + dy * .6, z: a.z + dz * .6, vx: dx * speed + a.vx * .5, vy: dy * speed, vz: dz * speed + a.vz * .5, t: 0, fuse: id === 'he' ? 2.0 : id === 'flash' ? 1.6 : id === 'fire' ? 1.5 : 2.6, owner: a, mesh: m, rest: false, rx: rnd(TAU), spin: rnd(6, 12), gid: ++NET.gid });
+  if (NET.role === 'host') { const g = GR[GR.length - 1]; netEv({ k: 'gren', gid: g.gid, id, o: a.nid, x: r2(g.x), y: r2(g.y), z: r2(g.z), vx: r2(g.vx), vy: r2(g.vy), vz: r2(g.vz) }, null); }
   AU.throwS();
 }
 function updateGrenades(dt) {
@@ -1921,22 +1966,23 @@ function updateGrenades(dt) {
     }
     g.mesh.position.set(g.x, g.y + .04, g.z); g.mesh.rotation.set(g.rx, g.t * 3, 0);
     const smokeRest = g.id === 'smoke' && g.rest && g.t > .9;
-    if (g.t >= g.fuse || smokeRest) { detonate(g); scene.remove(g.mesh); GR.splice(i, 1); }
+    if (NET.role === 'client') { if (g.t > 12) { scene.remove(g.mesh); GR.splice(i, 1); } }
+    else if (g.t >= g.fuse || smokeRest) { if (NET.role === 'host') netEv({ k: 'det', gid: g.gid, id: g.id, x: r2(g.x), y: r2(g.y), z: r2(g.z) }, null); detonate(g); scene.remove(g.mesh); GR.splice(i, 1); }
   }
 }
 function detonate(g) {
   const sp = AU.spat(g.x, g.z, 14);
   if (g.id === 'he') {
     explosion(g.x, Math.max(.2, g.y), g.z, false); AU.explode(sp, false);
-    for (const v of ACT) { if (!v.alive || (v.team === g.owner.team && v !== g.owner)) continue; const d = Math.hypot(v.x - g.x, v.z - g.z, v.y + 1 - g.y); if (d > 11) continue;
+    if (NET.role !== 'client') for (const v of ACT) { if (!v.alive || (v.team === g.owner.team && v !== g.owner)) continue; const d = Math.hypot(v.x - g.x, v.z - g.z, v.y + 1 - g.y); if (d > 11) continue;
       if (!los(g.x, g.y + .3, g.z, v.x, v.y + 1.0, v.z) && d > 2) continue; const dm = 150 * Math.pow(1 - d / 11, 1.3); if (dm < 3) continue;
       damage(v, g.owner, { dmg: dm, rm: 1, ratio: .6, reward: 300, name: 'HE' }, 'body', 0, v.x, v.y + 1, v.z, 0, 0, true); }
     shakeCam(clamp(1 - Math.hypot(g.x - PLAYER.x, g.z - PLAYER.z) / 25, 0, 1) * 1.2);
   } else if (g.id === 'flash') {
     AU.flashS(sp); lightFlash(g.x, g.y + .5, g.z, 0xffffff, 10, .25); spawnSprite(FX.fire, g.x, g.y + .3, g.z, .5, 4, .25, { add: true });
-    for (const v of ACT) { if (!v.alive) continue; const ex = g.x - v.x, ez = g.z - v.z, ey2 = g.y - (v.y + 1.5), d = Math.hypot(ex, ey2, ez); if (d > 45) continue; if (!los(v.x, v.y + v.eyeH(), v.z, g.x, g.y, g.z)) continue;
+    if (NET.role !== 'client') for (const v of ACT) { if (!v.alive) continue; const ex = g.x - v.x, ez = g.z - v.z, ey2 = g.y - (v.y + 1.5), d = Math.hypot(ex, ey2, ez); if (d > 45) continue; if (!los(v.x, v.y + v.eyeH(), v.z, g.x, g.y, g.z)) continue;
       const vyaw = v.isPlayer ? P.camYaw : v.yaw, fx = -Math.sin(vyaw), fz = -Math.cos(vyaw), dot = (fx * ex + fz * ez) / (Math.hypot(ex, ez) || 1);
-      const dur = (dot > .55 ? 4.2 : dot > -.2 ? 2.2 : .8) * (1 - d / 50); if (dur > 0.2) { v.flashT = Math.max(v.flashT, dur); if (v.isPlayer) { P.flash = dur; AU.ring(dur + 1.5); } } }
+      const dur = (dot > .55 ? 4.2 : dot > -.2 ? 2.2 : .8) * (1 - d / 50); if (dur > 0.2) { v.flashT = Math.max(v.flashT, dur); if (v.isPlayer) { P.flash = dur; AU.ring(dur + 1.5); } else if (v.remote) netTo(v, { k: 'flash', dur: r2(dur) }); } }
   } else if (g.id === 'fire') { spawnFire(g.x, g.z, g.owner);
   } else if (g.id === 'smoke') { spawnSmoke(g.x, g.y, g.z); AU.smokeS(sp); }
 }
@@ -1957,7 +2003,7 @@ function updatePlayer(dt) {
   // kyykky
   const wantC = K.ControlLeft || K.KeyC || K.ControlRight || PADIN.crouch || P.crouchLatch; p.crouch += ((wantC ? 1 : 0) - p.crouch) * Math.min(1, dt * 10); p.eye = lerp(1.65, 1.15, p.crouch);
   let max = ((K.ShiftLeft || K.ShiftRight || P.padWalk) ? WALK : RUN) * (w.speed || 1); if (p.crouch > .4) max = Math.min(max, CROUCHSP * (w.speed || 1)); if (p.scoped) max *= .6; if (p.boostT > 0) { p.boostT -= dt; max *= 1.22; } if (p.overT > 0) max *= 1.25; if ((P.adsK || 0) > .5) max *= .72; if (p.shieldUp) max *= .65; if (p.stunT > 0) max *= .35; if (p.slowT > 0) max *= .4;
-  const ix = dr ? 0 : clamp((K.KeyD ? 1 : 0) - (K.KeyA ? 1 : 0) + PADIN.mx, -1, 1), iz = dr ? 0 : clamp((K.KeyW ? 1 : 0) - (K.KeyS ? 1 : 0) + PADIN.mz, -1, 1); let wx = 0, wz = 0;
+  const ix = dr || (G.paused && netOn()) ? 0 : clamp((K.KeyD ? 1 : 0) - (K.KeyA ? 1 : 0) + PADIN.mx, -1, 1), iz = dr || (G.paused && netOn()) ? 0 : clamp((K.KeyW ? 1 : 0) - (K.KeyS ? 1 : 0) + PADIN.mz, -1, 1); let wx = 0, wz = 0;
   if ((ix || iz) && !frozen) { const l = Math.hypot(ix, iz), m = Math.min(1, l), fx = -Math.sin(p.yaw), fz = -Math.cos(p.yaw), rx = Math.cos(p.yaw), rz = -Math.sin(p.yaw); wx = (fx * iz + rx * ix) / l * m; wz = (fz * iz + rz * ix) / l * m; }
   const acc = p.onGround ? 11 : 1.8, k = Math.min(1, dt * acc); p.vx += (wx * max - p.vx) * k; p.vz += (wz * max - p.vz) * k; if (p.dashT > 0) { p.dashT -= dt; p.vx = p.dashX; p.vz = p.dashZ; }
   if ((K.Space || PADIN.jump) && p.onGround && !frozen && !dr) { p.vy = JUMPV; p.onGround = false; }
@@ -1981,9 +2027,9 @@ function updatePlayer(dt) {
   P.prompt = ''; P.pickup = null; let prog = 0;
   if (G.mode === 'bomb' && G.phase === 'live') {
     if (p.team === 'T' && !G.bomb.planted && isSite(p.x, p.z) && p.onGround) {
-      P.prompt = useKey() ? 'Asennetaan pommia...' : 'Pidä [' + GLY.use() + '] asentaaksesi pommin'; if (useKey() && spd < 2.5 && !G.bomb.planting) { p.plantProg += dt; prog = p.plantProg / PLANT_T; if (p.plantProg >= PLANT_T) { plantBomb(p); p.plantProg = 0; } } else if (!useKey()) p.plantProg = 0; else prog = p.plantProg / PLANT_T;
+      P.prompt = useKey() ? 'Asennetaan pommia...' : 'Pidä [' + GLY.use() + '] asentaaksesi pommin'; if (useKey() && spd < 2.5 && !G.bomb.planting) { p.plantProg += dt; prog = p.plantProg / PLANT_T; if (p.plantProg >= PLANT_T) { if (NET.role === 'client') netSend({ t: 'plant' }); else plantBomb(p); p.plantProg = 0; } } else if (!useKey()) p.plantProg = 0; else prog = p.plantProg / PLANT_T;
     } else if (p.team === 'CT' && G.bomb.planted && Math.hypot(p.x - G.bomb.x, p.z - G.bomb.z) < 2.4 && p.onGround) {
-      P.prompt = useKey() ? 'Puretaan pommia...' : 'Pidä [' + GLY.use() + '] purkaaksesi pommin' + (p.kit ? ' (pakki)' : ''); if (useKey() && spd < 2.5 && (!G.bomb.defuser || G.bomb.defuser === p)) { G.bomb.defuser = p; p.defProg += dt; prog = p.defProg / defuseTime(p); if (p.defProg >= defuseTime(p)) defuseBomb(p); if (Math.random() < .08) AU.defuse(); } else { if (G.bomb.defuser === p) G.bomb.defuser = null; p.defProg = 0; }
+      P.prompt = useKey() ? 'Puretaan pommia...' : 'Pidä [' + GLY.use() + '] purkaaksesi pommin' + (p.kit ? ' (pakki)' : ''); if (useKey() && spd < 2.5 && (!G.bomb.defuser || G.bomb.defuser === p)) { G.bomb.defuser = p; p.defProg += dt; prog = p.defProg / defuseTime(p); if (p.defProg >= defuseTime(p)) { if (NET.role === 'client') { netSend({ t: 'defuse' }); p.defProg = 0; } else defuseBomb(p); } if (Math.random() < .08) AU.defuse(); } else { if (G.bomb.defuser === p) G.bomb.defuser = null; p.defProg = 0; }
     } else { p.plantProg = 0; if (G.bomb && G.bomb.defuser === p) G.bomb.defuser = null; p.defProg = 0; }
   }
   if (!P.prompt && G.mode !== 'arms') { const d = nearestDrop(p.x, p.z, 1.9); if (d) { P.pickup = d; P.prompt = 'Poimi ' + WEAPONS[d.wid].name + ' [' + GLY.use() + ']'; } }
@@ -2018,6 +2064,7 @@ const BARH = 2.37, BARRIERS = [];
 function clearBarriers() { BARRIERS.forEach(b => { MAP.hgt[b.idx] = 0; scene.remove(b.mesh); disposeObj(b.mesh); }); BARRIERS.length = 0; }
 function useAbility(a) {
   if (!a.alive || !a.op) return false;
+  if (NET.role !== 'off') { if (a.isPlayer) subMsg('Kyvyt eivät ole käytössä moninpelissä'); return false; }
   if (a.op === 'recon' && DRONE.on && a.isPlayer) { droneExit(); return true; }
   if (a.op === 'breach' && CHARGES.some(c => c.owner === a)) { detonateCharges(a); a.abCd = a.abMax = 8; return true; }
   if (a.abCd > 0) return false;
@@ -2095,12 +2142,12 @@ const ATTS = {
 function attOK(a, id) { const w = a.weapon(), k = ATTS[id].key; if (!w || w.type === 'knife' || w.type === 'nade' || !w.mag) return false; if (k === 'sight' && (w.scope || w.type === 'sniper')) return false; if (k === 'sil' && w.type === 'shotgun') return false; return true; }
 function nearestDrop(x, z, r) { let best = null, bd = r; for (const d of DROPS) { if (d.t < .6) continue; const dd = Math.hypot(d.m.position.x - x, d.m.position.z - z); if (dd < bd && d.m.position.y < 1.2) { bd = dd; best = d; } } return best; }
 function dropWeapon(a) {
-  const id = a.cur; if (!a.alive || G.mode === 'arms' || !id || id === 'knife' || WEAPONS[id].type === 'nade') return false; const w = WEAPONS[id], am = a.ammo[id], att = a.att && a.att[id];
+  if (NET.role !== 'off') return false; const id = a.cur; if (!a.alive || G.mode === 'arms' || !id || id === 'knife' || WEAPONS[id].type === 'nade') return false; const w = WEAPONS[id], am = a.ammo[id], att = a.att && a.att[id];
   if (w.slot === 1) a.inv.primary = null; else a.inv.secondary = null; spawnDrop(a, { wid: id, am, att, throwDir: true }); delete a.ammo[id]; if (a.att) delete a.att[id]; a.cur = '_'; selectWeapon(a, bestWeapon(a));
   if (a.isPlayer) { subMsg('Pudotit: ' + w.name); AU.bounce({ vol: .6, pan: 0 }); refreshVMAtt(); } return true;
 }
 function tryPickup(a) {
-  if (!a.alive || G.mode === 'arms') return false; const d = nearestDrop(a.x, a.z, a.isPlayer ? 1.9 : 1.6); if (!d) return false; const w = WEAPONS[d.wid], key = w.slot === 1 ? 'primary' : 'secondary'; if (a.inv[key] === d.wid) return false;
+  if (!a.alive || G.mode === 'arms' || NET.role !== 'off') return false; const d = nearestDrop(a.x, a.z, a.isPlayer ? 1.9 : 1.6); if (!d) return false; const w = WEAPONS[d.wid], key = w.slot === 1 ? 'primary' : 'secondary'; if (a.inv[key] === d.wid) return false;
   const old = a.inv[key]; if (old) { spawnDrop(a, { wid: old, am: a.ammo[old], att: a.att[old] }); delete a.ammo[old]; delete a.att[old]; }
   a.inv[key] = d.wid; a.ammo[d.wid] = d.am || { mag: w.mag, res: w.res }; a.att[d.wid] = d.att || {}; scene.remove(d.m); DROPS.splice(DROPS.indexOf(d), 1); a.cur = '_'; selectWeapon(a, d.wid);
   if (a.isPlayer) { subMsg('Poimit: ' + w.name); AU.buy(); refreshVMAtt(); } return true;
@@ -2180,6 +2227,7 @@ function abStrike(a, big) {
 }
 /* ---------- Ultimate ---------- */
 function useUltimate(a) {
+  if (NET.role !== 'off') { if (a.isPlayer) subMsg('Ultimatet eivät ole käytössä moninpelissä'); return false; }
   if (!a.alive || !a.op || !OPS[a.op].ult || (a.ult || 0) < 100) { if (a.isPlayer && a.alive) { subMsg('Ultimate ei ole vielä valmis'); AU.deny(); } return false; }
   if (G.phase === 'freeze' || G.phase === 'end' || G.phase === 'matchend') return false; const op = OPS[a.op]; let ok = true;
   switch (a.op) {
@@ -2279,7 +2327,7 @@ function showOpDetail(id) {
   const o = OPS[id]; if (!o) return; const L = o.load;
   E('opDetail').innerHTML = `<b style="color:${o.col};font-size:22px;letter-spacing:.1em">${o.icon} ${o.name}</b> <span style="color:var(--dim);letter-spacing:.2em">${o.role}</span><div style="margin:6px 0">${o.ab ? `<b>${o.ab.toUpperCase()}</b> · ` : ''}${o.desc}</div><div style="color:var(--acc)">${L ? `PÄÄASE: ${L.p ? WEAPONS[L.p].name : '—'} · SIVUASE: ${WEAPONS[L.s].name} · TÄHTÄIN: ${(SIGHTS[L.sight || 'iron'] || SIGHTS.iron).name}` : 'Ei kiinteää varustusta – ostat aseet ostovalikosta.'}${o.ult ? ' · ULTIMATE: ' + o.ult.toUpperCase() : ''}</div>`;
 }
-function openOpPick() { if (G.mode === 'zombie' && false) return; P.ui = true; document.exitPointerLock && document.exitPointerLock(); P.fireHeld = false; buildOpPick(); $('opick').classList.remove('hidden'); }
+function openOpPick() { if (netOn()) return; P.ui = true; document.exitPointerLock && document.exitPointerLock(); P.fireHeld = false; buildOpPick(); $('opick').classList.remove('hidden'); }
 function closeOpPick(relock) { if ($('opick').classList.contains('hidden')) return; $('opick').classList.add('hidden'); P.ui = false; if (relock && G.running && !G.paused) lockPointer(); }
 /* ---------- Gadgetit ---------- */
 const CHARGES = [], WIRES = [], ALARMS = [], CRATES = [], FIRES = [];
@@ -2633,7 +2681,8 @@ function startMatch() {
   PLAYER = new Actor((S.name || 'Pelaaja').slice(0, 14), my, true); ACT.push(PLAYER);
   for (let i = 0; i < G.botsPer - 1; i++) ACT.push(createBot(names[ni++], my, uniformLook(my)));
   if (G.mode !== 'zombie') for (let i = 0; i < G.botsPer; i++) ACT.push(createBot(names[ni++], en)); else zReset();
-  if (!opUnlocked(G.op) || !OPS[G.op] || (OPS[G.op].side && G.mode === 'bomb' && OPS[G.op].side !== my)) { if (OPS[G.op] && OPS[G.op].side && G.mode === 'bomb') toast('⚠', OPS[G.op].name + ' ei sovi rooliisi', 'Käytetään BLITZiä – vaihda operaattori valintanäytöllä'); G.op = 'blitz'; } PLAYER.op = G.op; assignBotOps(); ACT.forEach(a => { a.charges = OPS[a.op] && OPS[a.op].charges || 0; }); ST.maps[G.mapKey] = 1; PROG.check(); P.roundKills = 0; ACT.forEach(a => { a.lvl = 0; }); if (G.mode === 'koth') kothInit();
+  if (NET.role === 'host') { NET.peers.forEach(pr => { pr.actor = null; netSeat(pr, true); }); G.op = 'blitz'; }
+  if (!opUnlocked(G.op) || !OPS[G.op] || (OPS[G.op].side && G.mode === 'bomb' && OPS[G.op].side !== my)) { if (OPS[G.op] && OPS[G.op].side && G.mode === 'bomb') toast('⚠', OPS[G.op].name + ' ei sovi rooliisi', 'Käytetään BLITZiä – vaihda operaattori valintanäytöllä'); G.op = 'blitz'; } PLAYER.op = G.op; if (NET.role === 'off') assignBotOps(); else ACT.forEach(a => { a.op = 'blitz'; }); ACT.forEach(a => { a.charges = OPS[a.op] && OPS[a.op].charges || 0; }); ST.maps[G.mapKey] = 1; PROG.check(); P.roundKills = 0; ACT.forEach(a => { a.lvl = 0; }); if (G.mode === 'koth') kothInit();
   setVMTeam(my);
   ACT.forEach(a => { a.money = G.mode === 'bomb' ? 800 : G.mode === 'zombie' ? 700 : 0; a.kills = 0; a.deaths = 0; defaultLoadout(a); });
   Object.assign(P, { punchP: 0, punchY: 0, flash: 0, throwT: 0, shake: 0, scoped: 0 });
@@ -2644,7 +2693,7 @@ function startRound(first) {
   G.bomb = { planted: false, planting: false, planter: null, defuser: null, x: 0, z: 0, t: BOMB_T, site: null, beep: 0, mesh: null, led: 0 };
   GR.forEach(g => scene.remove(g.mesh)); GR.length = 0; SMOKES.forEach(s => s.puffs.forEach(p => { scene.remove(p.s); p.s.material.dispose(); })); SMOKES.length = 0;
   PA.clear(); PN.clear(); FX.decals.forEach(d => d.visible = false); clearDrops();
-  G.plan = Math.random() < .5 ? 'A' : 'B';
+  G.plan = Math.random() < .5 ? 'A' : 'B'; netEv({ k: 'round', r: G.round, first: first ? 1 : 0 }, null);
   const cx = MAP.W * TS / 2, cz = MAP.H * TS / 2;
   for (const team of ['CT', 'T']) {
     const spawns = (team === 'T' ? MAP.spawnT : MAP.spawnCT).slice().sort(() => Math.random() - .5); let si = 0;
@@ -2652,7 +2701,7 @@ function startRound(first) {
       const was = a.alive; if (!was || first) { defaultLoadout(a); if (G.mode === 'dm') { /* ilmaiset */ } } else { for (const id in a.ammo) { const w = WEAPONS[id]; a.ammo[id].mag = w.mag; a.ammo[id].res = w.res; } }
       const s = spawns[si++ % spawns.length]; a.x = s.x; a.z = s.z; a.y = 0; a.vx = a.vz = a.vy = 0; a.hp = 100; a.alive = true; a.kick = 0; a.crouch = 0; a.yaw = Math.atan2(-(cx - a.x), -(cz - a.z)); a.pitch = 0; a.flashT = 0; a.reloadT = 0; a.drawT = 0; a.scoped = 0; a.deadT = 0; a.protect = 0; a.plantProg = 0; a.defProg = 0; a.crouch = 0; a.eye = 1.65; a.onGround = true; a.nextFire = 0; a.shots = 0; a.lastShot = -9; a.hurtT = 0;
       a.bodyRoll = rnd(-.3, .3); if (G.mode === 'bomb' || G.mode === 'dm' || G.mode === 'koth') applyLoadout(a);
-      if (!a.isPlayer) { const ai = a.ai; Object.assign(ai, { retreated: false, coverT: 0, flashWait: 0, smokedSite: false, smokedBomb: false, wp: null, tgt: null, seen: 99, site: null, role: null, hold: null, holdT: 0, dest: null, heard: null, alert: null, invT: 0, burst: 0, burstT: 0, offX: rnd(-.5, .5) * 1.2, offZ: rnd(-.5, .5) * 1.2, grenT: rnd(6, 14), px: a.x, pz: a.z }); a.mesh.visible = true; a.mesh.rotation.set(0, a.yaw, 0); if (a.mesh.userData.tag) a.mesh.userData.tag.visible = true; a.mesh.userData.gunId = null; if (G.mode === 'bomb' && !first || first) { if (G.mode === 'bomb') botBuy(a); else if (G.mode === 'zombie') zKit(a); else botDMKit(a); } a.cur = bestWeapon(a); setBotGun(a, a.cur); }
+      if (!a.isPlayer) { const ai = a.ai; Object.assign(ai, { retreated: false, coverT: 0, flashWait: 0, smokedSite: false, smokedBomb: false, wp: null, tgt: null, seen: 99, site: null, role: null, hold: null, holdT: 0, dest: null, heard: null, alert: null, invT: 0, burst: 0, burstT: 0, offX: rnd(-.5, .5) * 1.2, offZ: rnd(-.5, .5) * 1.2, grenT: rnd(6, 14), px: a.x, pz: a.z }); a.mesh.visible = true; a.mesh.rotation.set(0, a.yaw, 0); if (a.mesh.userData.tag) a.mesh.userData.tag.visible = true; a.mesh.userData.gunId = null; if (!a.remote && (G.mode === 'bomb' && !first || first)) { if (G.mode === 'bomb') botBuy(a); else if (G.mode === 'zombie') zKit(a); else botDMKit(a); } a.cur = bestWeapon(a); setBotGun(a, a.cur); if (a.remote) netSendSpawn(a); }
       else { a.cur = bestWeapon(a); showVM(a.cur); a.drawT = .6; }
     }
   }
@@ -2672,30 +2721,39 @@ function respawnDM0(a) {
   a.yaw = Math.atan2(-(MAP.W * TS / 2 - a.x), -(MAP.H * TS / 2 - a.z));
   if (G.mode === 'arms') { armsGive(a); if (a.isPlayer) { $('deadOv').style.opacity = 0; P.spec = null; P.specMode = 0; P.killInfo = null; P.killcam = false; P.camS = null; a.pitch = 0; } else { a.mesh.visible = true; a.mesh.rotation.set(0, a.yaw, 0); if (a.mesh.userData.tag) a.mesh.userData.tag.visible = true; const ai = a.ai; ai.tgt = null; ai.seen = 99; ai.dest = null; ai.invT = 0; } return; }
   if (a.isPlayer) { const keep = a.inv.primary; defaultLoadout(a); a.armor = 100; a.helmet = true; if (keep) giveWeapon(a, keep); a.cur = bestWeapon(a); showVM(a.cur); a.drawT = .6; $('deadOv').style.opacity = 0; P.spec = null; P.specMode = 0; P.killInfo = null; P.killcam = false; P.camS = null; a.pitch = 0; }
+  else if (a.remote) { const keep = a.inv.primary; defaultLoadout(a); a.armor = 100; a.helmet = true; if (keep) giveWeapon(a, keep); a.mesh.visible = true; a.mesh.rotation.set(0, a.yaw, 0); if (a.mesh.userData.tag) a.mesh.userData.tag.visible = true; a.mesh.userData.gunId = null; a.cur = bestWeapon(a); setBotGun(a, a.cur); netTo(a, { k: 'rs' }); }
   else { botDMKit(a); a.mesh.visible = true; a.mesh.rotation.set(0, a.yaw, 0); if (a.mesh.userData.tag) a.mesh.userData.tag.visible = true; a.mesh.userData.gunId = null; a.cur = bestWeapon(a); setBotGun(a, a.cur); const ai = a.ai; ai.tgt = null; ai.seen = 99; ai.dest = null; ai.invT = 0; }
 }
 
 function plantBomb(a) {
-  const B = G.bomb; if (B.planted || G.phase !== 'live') return; B.planted = true; B.planting = false; B.planter = null; B.x = a.x; B.z = a.z; B.t = BOMB_T; B.site = siteAt(a.x, a.z); B.beep = 0;
+  const B = G.bomb; if (B.planted || G.phase !== 'live') return;   B.planted = true; B.planting = false; B.planter = null; B.x = a.x; B.z = a.z; B.t = BOMB_T; B.site = siteAt(a.x, a.z); B.beep = 0;
+  bombVisual(B.x, B.z, B.site, false); netEv({ k: 'plant', x: r2(B.x), z: r2(B.z), site: B.site }, null);
+  if (a.isPlayer) trackEvent('plant');
+  if (isHuman(a)) a.money += 300; else for (const x of ACT) if (x.team === 'T') x.money = Math.min(16000, x.money + 100);
+  ACT.forEach(x => { if (!x.isPlayer) { x.ai.hold = null; x.ai.holdT = 0; x.ai.dest = null; } });
+}
+function bombVisual(bx, bz, site, quiet) {
+  const B = G.bomb; if (B.mesh) { scene.remove(B.mesh); disposeObj(B.mesh); }
   const g = new THREE.Group(); const b1 = new THREE.Mesh(new THREE.BoxGeometry(.42, .14, .3), new THREE.MeshLambertMaterial({ color: 0x2c3d2a })); b1.position.y = .08; g.add(b1);
   const b2 = new THREE.Mesh(new THREE.BoxGeometry(.3, .02, .18), new THREE.MeshLambertMaterial({ color: 0x15171a })); b2.position.y = .16; g.add(b2);
   const led = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex('rgba(255,60,60,1)', 'rgba(255,0,0,.5)', .5), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true })); led.scale.set(.4, .4, 1); led.position.set(.1, .2, 0); g.add(led); B.led = led;
-  g.position.set(B.x, 0, B.z); scene.add(g); B.mesh = g;
-  if (a.isPlayer) trackEvent('plant');
-  AU.plant(); hudMsg('POMMI ASENNETTU', 'Paikka ' + B.site + ' · ' + BOMB_T + ' s', '#ff4d5e'); if (a.isPlayer) a.money += 300; else for (const x of ACT) if (x.team === 'T') x.money = Math.min(16000, x.money + 100);
-  ACT.forEach(x => { if (!x.isPlayer) { x.ai.hold = null; x.ai.holdT = 0; x.ai.dest = null; } });
+  g.position.set(bx, 0, bz); scene.add(g); B.mesh = g;
+  if (!quiet) { AU.plant(); hudMsg('POMMI ASENNETTU', 'Paikka ' + site + ' · ' + BOMB_T + ' s', '#ff4d5e'); }
   $('timer').classList.add('bomb');
 }
 function defuseBomb(a) {
   if (a.isPlayer) trackEvent('defuse');
-  G.bomb.planted = false; G.bomb.defuser = null; a.defProg = 0; AU.defuse(); G.bomb.defused = true; if (G.bomb.led) G.bomb.led.visible = false; endRound('CT', 'Pommi purettu');
+  G.bomb.planted = false; G.bomb.defuser = null; a.defProg = 0; AU.defuse(); G.bomb.defused = true; if (G.bomb.led) G.bomb.led.visible = false; netEv({ k: 'defuse' }, null); endRound('CT', 'Pommi purettu');
 }
 function explodeBomb() {
-  const B = G.bomb; B.planted = false; B.exploded = true; explosion(B.x, .3, B.z, true); AU.explode(AU.spat(B.x, B.z, 30), true); lightFlash(B.x, 2, B.z, 0xffa050, 14, 1);
-  for (let i = 0; i < 6; i++) setTimeout(() => explosion(B.x + rnd(-4, 4), .3, B.z + rnd(-4, 4), false), i * 120);
+  const B = G.bomb; B.planted = false; B.exploded = true; netEv({ k: 'boom', x: r2(B.x), z: r2(B.z) }, null); bombBoomFx(B.x, B.z);
   for (const v of ACT) { if (!v.alive) continue; const d = Math.hypot(v.x - B.x, v.z - B.z); if (d > 26) continue; const dm = 400 * Math.pow(1 - d / 26, 1.2); if (dm > 4) damage(v, PLAYER.team === 'T' ? PLAYER : (ACT.find(a => a.team === 'T') || v), { dmg: dm, rm: 1, ratio: .5, reward: 0 }, 'body', 0, v.x, v.y + 1, v.z, 0, 0, true); }
-  shakeCam(clamp(1 - Math.hypot(B.x - PLAYER.x, B.z - PLAYER.z) / 50, .2, 1.6)); if (B.mesh) B.mesh.visible = false;
   endRound('T', 'Pommi räjähti');
+}
+function bombBoomFx(bx, bz) {
+  explosion(bx, .3, bz, true); AU.explode(AU.spat(bx, bz, 30), true); lightFlash(bx, 2, bz, 0xffa050, 14, 1);
+  for (let i = 0; i < 6; i++) setTimeout(() => explosion(bx + rnd(-4, 4), .3, bz + rnd(-4, 4), false), i * 120);
+  shakeCam(clamp(1 - Math.hypot(bx - PLAYER.x, bz - PLAYER.z) / 50, .2, 1.6)); if (G.bomb && G.bomb.mesh) G.bomb.mesh.visible = false;
 }
 function checkRoundEnd() {
   if (G.mode !== 'bomb' || G.phase !== 'live') return;
@@ -2712,6 +2770,7 @@ function endRound(winner, reason) {
   const mine = winner === PLAYER.team; hudMsg(winner === 'CT' ? 'VASTATERRORISTIT VOITTAVAT' : 'TERRORISTIT VOITTAVAT', reason, winner === 'CT' ? '#5aa9ff' : '#ff9a3d'); mine ? AU.win() : AU.lose();
   $('timer').classList.remove('bomb'); G.endWinner = winner;
   if (G.scoreCT >= G.winsNeeded || G.scoreT >= G.winsNeeded) { G.final = true; G.timer = 4; } else G.final = false;
+  netEv({ k: 'end', w: winner, r: reason, sc: [G.scoreCT, G.scoreT], fin: G.final ? 1 : 0 }, null);
 }
 function endMatchDM() {
   if (G.phase === 'matchend') return; G.phase = 'matchend'; const w = G.dm.kills.CT === G.dm.kills.T ? null : G.dm.kills.CT > G.dm.kills.T ? 'CT' : 'T'; showEnd(w);
@@ -2719,7 +2778,7 @@ function endMatchDM() {
 function updateGame(dt) {
   G.t += dt;
   if (G.mode === 'bomb') {
-    if (G.phase === 'freeze') { G.timer -= dt; if (G.timer <= 0) { G.phase = 'live'; G.timer = ROUND_T; G.liveT = 0; recStart(); hudMsg('ALOITA!', '', '#4be08a'); AU.horn(); closeBuy(false); } }
+    if (G.phase === 'freeze') { G.timer -= dt; if (G.timer <= 0) { G.phase = 'live'; G.timer = ROUND_T; G.liveT = 0; recStart(); hudMsg('ALOITA!', '', '#4be08a'); AU.horn(); closeBuy(false); netEv({ k: 'live' }, null); } }
     else if (G.phase === 'live') {
       G.liveT += dt; if (!G.bomb.planted) { G.timer -= dt; if (G.timer <= 0) { if (PLAYER) endRound('CT', 'Aika loppui'); } } else { G.bomb.t -= dt; G.timer = G.bomb.t; if (G.bomb.t <= 0) explodeBomb(); }
       if (G.liveT > BUY_WINDOW && !$('buy').classList.contains('hidden')) closeBuy(false);
@@ -2742,10 +2801,11 @@ function updateGame(dt) {
   updateBarriers(dt * ts); updateOps(dt * ts); updateSiege(dt * ts);
   updatePlayer(dt); updatePlayerStyle(dt); recFrame(dt);
   if (PLAYER.alive) { PLAYER.x += 0; updateVM(dt, PLAYER); }
-  for (const a of ACT) { if (a.isPlayer) continue; if (a.zombie) updateZombie(a, dt * ts); else updateBot(a, dt * ts); } zCleanup();
+  for (const a of ACT) { if (a.isPlayer) continue; if (a.remote) { updateRemote(a, dt * ts); continue; } if (a.zombie) updateZombie(a, dt * ts); else updateBot(a, dt * ts); } zCleanup();
   updateGrenades(dt * ts); updateDrops(dt * ts); updateFX(dt * ts); if (!PLAYER.alive) updateSpectate(dt);
   if (P.flash > 0) P.flash -= dt;
   if (PLAYER.flashT > 0) PLAYER.flashT -= dt; if (PLAYER.protect > 0) PLAYER.protect -= dt; PLAYER.hurtT -= dt;
+  if (NET.role === 'host') netHostTick(dt);
 }
 /* =====================================================================
    ÄLYKKÄÄMMÄT BOTIT: persoonat, tiedonjako, apuvälineet, sivustahyökkäys, perääntyminen
@@ -2765,7 +2825,7 @@ function updatePlayerStyle(dt) {
 }
 const styleName = () => G.pstyle === 'camper' ? 'KAMPAAJA' : G.pstyle === 'rusher' ? 'RYNNISTÄJÄ' : 'TASAPAINOINEN';
 /* Tiedon jako joukkueelle */
-function shareIntel(a, e) { for (const b of ACT) { if (b === a || b.isPlayer || b.zombie || !b.alive || b.team !== a.team) continue; if (b.ai.tgt && b.ai.seen < 2) continue; if (Math.hypot(b.x - a.x, b.z - a.z) > 45 || Math.random() > .65) continue; b.ai.heard = { x: e.x, z: e.z, t: 5 }; } }
+function shareIntel(a, e) { for (const b of ACT) { if (b === a || !isBotA(b) || b.zombie || !b.alive || b.team !== a.team) continue; if (b.ai.tgt && b.ai.seen < 2) continue; if (Math.hypot(b.x - a.x, b.z - a.z) > 45 || Math.random() > .65) continue; b.ai.heard = { x: e.x, z: e.z, t: 5 }; } }
 /* Apuvälineiden käyttö */
 function botUtility(a, dt) {
   const ai = a.ai; ai.utilT = (ai.utilT || 0) - dt; if (ai.utilT > 0) return false; ai.utilT = .5 + rnd(.3);
@@ -2832,10 +2892,10 @@ function zSpawn(type) {
 }
 function zStartWave() {
   Z.wave++; Z.state = 'wave'; G.phase = 'live'; Z.queue = zQueue(Z.wave); Z.spawnT = 1.5; Z.waveT = 0; const boss = Z.wave % 5 === 0;
-  hudMsg('AALTO ' + Z.wave, boss ? '⚠ BOSS-AALTO ⚠' : 'Zombeja: ' + Z.queue.length, boss ? '#ff2a3d' : '#ff6a3d'); AU.waveStart(); closeBuy(false);
+  hudMsg('AALTO ' + Z.wave, boss ? '⚠ BOSS-AALTO ⚠' : 'Zombeja: ' + Z.queue.length, boss ? '#ff2a3d' : '#ff6a3d'); AU.waveStart(); closeBuy(false); netEv({ k: 'zw', wave: Z.wave, boss: boss ? 1 : 0, n: Z.queue.length }, null);
 }
 function zEndWave() {
-  const bonus = 250 + Z.wave * 60; PLAYER.money = Math.min(16000, PLAYER.money + bonus); trackEvent('wave', Z.wave); AU.waveClear();
+  const bonus = 250 + Z.wave * 60; for (const h of ACT) if (isHuman(h) && !h.puppet) h.money = Math.min(16000, h.money + bonus); netEv({ k: 'zc', wave: Z.wave, bonus }, null); trackEvent('wave', Z.wave); AU.waveClear();
   startRound(false); hudMsg('AALTO ' + Z.wave + ' SELVITTY', 'Bonus $' + bonus + ' · seuraava aalto alkaa pian', '#4be08a');
 }
 function zGameOver() { if (Z.over) return; Z.over = true; G.phase = 'matchend'; showEndZ(); }
@@ -2862,7 +2922,7 @@ function updateZombie(a, dt) {
     const dx = t.x - a.x, dz = t.z - a.z, d = Math.hypot(dx, dz), reach = 1.45 * Math.min(1.6, a.sc);
     if (d > reach * .85) { if (ai.direct || d < 4) steer(a, t.x, t.z, zsp); else botMoveTo(a, Math.floor(t.x / TS), Math.floor(t.z / TS), zsp); }
     botLook(a, dt, Math.atan2(-dx, -dz), 9); a.atkT -= dt;
-    if (d < reach && a.atkT <= 0) { a.atkT = a.zt === 'boss' ? 1.2 : a.zt === 'tank' ? 1.3 : .95; a.kick = 1; AU.claw(AU.spat(a.x, a.z, 8)); damage(t, a, { dmg: a.dmgZ, rm: 1, ratio: .35, reward: 0, name: 'Zombi', short: 'KYNSI' }, 'body', 0, t.x, t.y + 1.2, t.z, dx / (d || 1), dz / (d || 1), true); if (S.particles) spawnBlood(t.x, t.y + 1.2, t.z, dx / (d || 1), dz / (d || 1), 5, false); }
+    if (d < reach && a.atkT <= 0) { a.atkT = a.zt === 'boss' ? 1.2 : a.zt === 'tank' ? 1.3 : .95; a.kick = 1; AU.claw(AU.spat(a.x, a.z, 8)); netEv({ k: 'claw', a: a.nid }, null); damage(t, a, { dmg: a.dmgZ, rm: 1, ratio: .35, reward: 0, name: 'Zombi', short: 'KYNSI' }, 'body', 0, t.x, t.y + 1.2, t.z, dx / (d || 1), dz / (d || 1), true); if (S.particles) spawnBlood(t.x, t.y + 1.2, t.z, dx / (d || 1), dz / (d || 1), 5, false); }
   }
   a.groanT -= dt; if (a.groanT <= 0) { a.groanT = rnd(3, 8); const sp = AU.spat(a.x, a.z, 9); if (sp.vol > .05) AU.zombie(sp, a.zt); }
   finishBot(a, dt);
@@ -3282,6 +3342,7 @@ function recFrame(dt) {
 }
 function replayAvailable() { return G.mode === 'bomb' && G.phase === 'end' && REC.frames.length > 10 && !REP.active; }
 function startReplay() {
+  if (netOn()) return;
   if (!replayAvailable()) return false; const p = PLAYER; REP.active = true; G.replay = true; REP.t = 0; REP.dur = REC.frames[REC.frames.length - 1].t; REP.speed = 1; REP.paused = false; REP.ei = 0; REP.follow = -1;
   REP.backup = ACT.map(a => ({ x: a.x, y: a.y, z: a.z, yaw: a.yaw, pitch: a.pitch, alive: a.alive, cur: a.cur, crouch: a.crouch, moveSpd: a.moveSpd, deadT: a.deadT, vis: a.mesh ? a.mesh.visible : true, gunId: a.mesh ? a.mesh.userData.gunId : null, ds: a.deathType }));
   REP.pm = createBot(p.name, p.team, uniformLook(p.team)); REP.pm.mesh.userData.tag.visible = false; REP.pm.mesh.visible = true;
@@ -3337,6 +3398,433 @@ function padReplay(dt) {
   if (padHit(1) || padHit(9)) { endReplay(); return; } if (padHit(2)) REP.paused = !REP.paused; if (padHit(4)) REP.t = Math.max(0, REP.t - 5); if (padHit(5)) REP.t = Math.min(REP.dur, REP.t + 5); if (padHit(12)) REP.speed = Math.min(4, REP.speed * 2); if (padHit(13)) REP.speed = Math.max(.25, REP.speed / 2);
   if (PAD.v[7] > .6 && PAD.pv[7] <= .6) replayCycle(1); if (PAD.v[6] > .6 && PAD.pv[6] <= .6) replayCycle(-1);
 }
+
+/* =====================================================================
+   MONINPELI (WebRTC / PeerJS) · isäntä-auktoritatiivinen
+   - Isäntä pyörittää koko pelin (botit, kierrokset, pommi, zombit) ja lähettää tilan 20 Hz.
+   - Pelaajat liikkuvat ja tähtäävät itse (asiakas lähettää asennon), isäntä päättää osumista, taloudesta ja kierroksista.
+   ===================================================================== */
+const NET_VER = 1, TEAM_MAX = 5, MP_MODES = ['bomb', 'dm', 'zombie'];
+const NET = { role: 'off', code: '', tr: null, peers: new Map(), conn: null, me: 0, evAll: [], gid: 0, snapT: 0, inT: 0, started: false, ping: 0, pingT: 0, tpn: 0, rosterKey: '', prevBots: null, joinT: null, bg: null, lastSnap: 0, lastTick: 0 };
+const netOn = () => NET.role !== 'off';
+const isHuman = a => !!a && (a.isPlayer || a.remote || a.human);
+const isBotA = a => !!a && !a.isPlayer && !a.remote && !a.puppet;
+const r2 = v => Math.round(v * 100) / 100, r1 = v => Math.round(v * 10) / 10;
+const byNid = id => { for (const a of ACT) if (a.nid === id) return a; return null; };
+const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fin = (...v) => v.every(n => typeof n === 'number' && Number.isFinite(n));
+let _PEL = null; // keräävä taulukko yhden laukauksen sirpaleille
+
+/* ---------- Kuljetuskerros ---------- */
+const TR = { loop: /[?&]net=loop/.test(location.search) };
+function trPeerHost(code, h) {
+  if (typeof Peer === 'undefined') { setTimeout(() => h.onError('nolib'), 0); return { close() { } }; }
+  const peer = new Peer('sfz-' + code, { debug: 0 });
+  peer.on('open', () => h.onOpen()); peer.on('error', e => h.onError(e.type || 'error', e)); peer.on('disconnected', () => { try { peer.reconnect(); } catch (e) { } });
+  peer.on('connection', c => {
+    const w = { id: c.peer, send: m => { try { if (c.open) c.send(m); } catch (e) { } }, close: () => { try { c.close(); } catch (e) { } } };
+    c.on('open', () => h.onConn(w)); c.on('data', d => { if (w.onmsg) w.onmsg(d); }); c.on('close', () => { if (w.onclose) w.onclose(); }); c.on('error', () => { if (w.onclose) w.onclose(); });
+  });
+  return { close() { try { peer.destroy(); } catch (e) { } } };
+}
+function trPeerJoin(code, h) {
+  if (typeof Peer === 'undefined') { setTimeout(() => h.onError('nolib'), 0); return { close() { } }; }
+  const peer = new Peer({ debug: 0 });
+  peer.on('error', e => h.onError(e.type || 'error', e));
+  peer.on('open', () => {
+    const c = peer.connect('sfz-' + code, { reliable: true, serialization: 'json' });
+    const w = { id: 'host', send: m => { try { if (c.open) c.send(m); } catch (e) { } }, close: () => { try { c.close(); } catch (e) { } } };
+    c.on('open', () => h.onOpen(w)); c.on('data', d => { if (w.onmsg) w.onmsg(d); }); c.on('close', () => { if (w.onclose) w.onclose(); }); c.on('error', () => { if (w.onclose) w.onclose(); });
+  });
+  return { close() { try { peer.destroy(); } catch (e) { } } };
+}
+function trLoopHost(code, h) { // testikäyttöön: saman selaimen välilehdet / iframet
+  const bc = new BroadcastChannel('sfz-loop-' + code), conns = new Map(); setTimeout(() => h.onOpen(), 0);
+  bc.onmessage = ev => {
+    const m = ev.data; if (!m || m.to !== 'host') return;
+    if (m.k === 'join') { const id = m.from, w = { id, send: d => bc.postMessage({ to: id, from: 'host', k: 'data', d }), close: () => bc.postMessage({ to: id, from: 'host', k: 'close' }) }; conns.set(id, w); h.onConn(w); }
+    else if (m.k === 'data') { const w = conns.get(m.from); if (w && w.onmsg) w.onmsg(m.d); }
+    else if (m.k === 'close') { const w = conns.get(m.from); if (w) { conns.delete(m.from); if (w.onclose) w.onclose(); } }
+  };
+  return { close() { conns.forEach(w => w.close()); bc.close(); } };
+}
+function trLoopJoin(code, h) {
+  const id = 'c' + Math.random().toString(36).slice(2, 8), bc = new BroadcastChannel('sfz-loop-' + code);
+  const w = { id: 'host', send: d => bc.postMessage({ to: 'host', from: id, k: 'data', d }), close: () => { bc.postMessage({ to: 'host', from: id, k: 'close' }); bc.close(); } };
+  bc.onmessage = ev => { const m = ev.data; if (!m || m.to !== id) return; if (m.k === 'data') { if (w.onmsg) w.onmsg(m.d); } else if (m.k === 'close') { if (w.onclose) w.onclose(); } };
+  bc.postMessage({ to: 'host', from: id, k: 'join' }); setTimeout(() => h.onOpen(w), 0);
+  return { close() { try { w.close(); } catch (e) { } } };
+}
+const trHost = (code, h) => TR.loop ? trLoopHost(code, h) : trPeerHost(code, h);
+const trJoin = (code, h) => TR.loop ? trLoopJoin(code, h) : trPeerJoin(code, h);
+const netCode = () => { const c = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; let s = ''; for (let i = 0; i < 4; i++) s += c[Math.floor(Math.random() * c.length)]; return s; };
+
+/* ---------- Yhteiset apurit ---------- */
+function netSend(m) { if (NET.conn) NET.conn.send(m); }
+function netEv(e, ex) { if (NET.role !== 'host') return; e.ex = ex || null; NET.evAll.push(e); }
+function netTo(a, e) { if (NET.role !== 'host' || !a || !a.remote) return; const pr = NET.peers.get(a.peerId); if (pr) pr.evq.push(e); }
+function netUi(msg) { const e = document.getElementById('olStatus'); if (e) e.textContent = msg || ''; }
+function netFail(msg) { toast('⚠', 'MONINPELI', msg); netUi(msg); netLeave(); if (typeof refreshOnline === 'function') refreshOnline(); }
+
+/* ---------- Isäntä: huone ja liittyjät ---------- */
+function netHostOpen() {
+  if (NET.role !== 'off') return; NET.role = 'host'; NET.started = false; NET.peers.clear(); NET.evAll = []; netUi('Luodaan huonetta…'); refreshOnline();
+  const tryCode = n => {
+    NET.code = netCode();
+    NET.tr = trHost(NET.code, {
+      onOpen: () => { netUi('Huone avattu – jaa koodi kavereille'); refreshOnline(); },
+      onError: (t, e) => { if (t === 'unavailable-id' && n < 6) { if (NET.tr) NET.tr.close(); tryCode(n + 1); } else if (t === 'nolib') netFail('PeerJS-kirjasto ei latautunut (tarkista nettiyhteys)'); else netFail('Huoneen luonti epäonnistui (' + t + ')'); },
+      onConn: hostOnConn
+    });
+  }; tryCode(0);
+}
+function hostOnConn(w) {
+  const pr = { id: w.id, w, name: 'Pelaaja', actor: null, evq: [], in: null, tpn: 0, lastIn: performance.now() }; NET.peers.set(w.id, pr);
+  w.onmsg = m => { try { hostOnMsg(pr, m); } catch (e) { console.error('net-host', e); } };
+  w.onclose = () => hostOnLeave(pr);
+}
+function hostLobbyMsg() { return { t: 'lobby', code: NET.code, players: [S.name].concat([...NET.peers.values()].map(p => p.name)), mode: G.mode, map: G.mapSel === 'random' ? 'RANDOM' : G.mapKey, started: NET.started }; }
+function hostBroadcastLobby() { const m = hostLobbyMsg(); NET.peers.forEach(p => p.w.send(m)); refreshOnline(); }
+function hostOnLeave(pr) {
+  if (!NET.peers.has(pr.id)) return; NET.peers.delete(pr.id);
+  if (pr.actor) { toast('◈', pr.name + ' poistui', 'Tilalle tuli botti'); netUnseat(pr); }
+  hostBroadcastLobby();
+}
+function hostOnMsg(pr, m) {
+  switch (m.t) {
+    case 'hello': {
+      if (m.v !== NET_VER) { pr.w.send({ t: 'bad', msg: 'Pelin versiot eivät täsmää – lataa sivu uudelleen' }); return; }
+      pr.name = String(m.name || 'Pelaaja').replace(/[<>&"]/g, '').slice(0, 14) || 'Pelaaja';
+      if (NET.started && G.running) { const a = netSeat(pr, false); if (!a) { pr.w.send({ t: 'full' }); NET.peers.delete(pr.id); setTimeout(() => pr.w.close(), 300); return; } netSendInit(pr); toast('◈', pr.name + ' liittyi', a.team === 'CT' ? 'Vastaterroristit' : 'Terroristit'); }
+      hostBroadcastLobby(); break;
+    }
+    case 'ping': pr.w.send({ t: 'pong', c: m.c }); break;
+    case 'in': if (m.tp === pr.tpn && fin(m.x, m.y, m.z, m.yaw, m.pitch, m.vx, m.vz, m.cr, m.rl) && typeof m.cur === 'string') { pr.in = m; pr.lastIn = performance.now(); } break;
+    case 'fire': { const a = pr.actor; if (!a || !a.alive || !WEAPONS[m.w] || !Array.isArray(m.m) || m.m.length !== 3 || !m.m.every(Number.isFinite) || !Array.isArray(m.p) || m.p.length > 14 || !m.p.every(q => Array.isArray(q) && q.length === 7 && q.every(Number.isFinite))) break; const w = WEAPONS[m.w]; a.kick = Math.min(1, a.kick + .8); a.firedT = G.t; emitNoise(a.x, a.z, (w.snd === 'awp' || w.snd === 'rifle' ? 55 : 38) * (m.sil ? .3 : 1), a.team); const e = { k: 'shot', a: a.nid, w: m.w, m: m.m, p: m.p, sil: m.sil ? 1 : 0 }; netEv(e, pr.id); netShotFx(e); break; }
+    case 'hit': {
+      const k = pr.actor, v = byNid(m.v), base = k && m.w && WEAPONS[m.w.id]; if (!k || !k.alive || !v || !v.alive || !base || v === k || v.team === k.team || !fin(m.w.dmg, m.dist, m.hx, m.hy, m.hz, m.dx, m.dz) || !['head', 'body', 'legs'].includes(m.part)) break;
+      const w = Object.assign({}, base, { dmg: Math.min(m.w.dmg, base.id === 'knife' ? 150 : base.dmg), name: m.w.name || base.name });
+      damage(v, k, w, m.part, m.dist, m.hx, m.hy, m.hz, m.dx, m.dz, !!m.direct); break;
+    }
+    case 'throw': { const a = pr.actor; if (!a || !a.alive || !['he', 'flash', 'smoke'].includes(m.id) || !(a.inv[m.id] > 0) || (G.phase === 'freeze' && G.mode === 'bomb') || !fin(m.dx, m.dy, m.dz, m.sp)) break; a.inv[m.id]--; throwGrenade(a, m.id, m.dx, m.dy, m.dz, clamp(m.sp, 8, 20)); break; }
+    case 'buy': {
+      const a = pr.actor; if (!a || !a.alive) break; netTakeAmmo(a, m.am, m.att); if (m.cur && a.hasWeapon(m.cur)) a.cur = m.cur;
+      const ok = buyItem(a, m.id); netTo(a, Object.assign(netLoadout(a), { k: 'lo', buy: ok ? 1 : 0 })); break;
+    }
+    case 'plant': { const a = pr.actor; if (a && a.alive && a.team === 'T' && G.mode === 'bomb' && G.phase === 'live' && !G.bomb.planted && isSite(a.x, a.z)) plantBomb(a); break; }
+    case 'defuse': { const a = pr.actor; if (a && a.alive && a.team === 'CT' && G.mode === 'bomb' && G.bomb.planted && Math.hypot(a.x - G.bomb.x, a.z - G.bomb.z) < 3.6) defuseBomb(a); break; }
+  }
+}
+
+/* ---------- Isäntä: pelaajien istuttaminen ---------- */
+function netTakeAmmo(a, am, att) { // asiakkaan lipas- ja lisäosatilanne, siivottuna
+  if (am && typeof am === 'object') { const o = {}; for (const id in am) { const w = WEAPONS[id], q = am[id]; if (w && w.mag && q && fin(q.mag, q.res) && (id === a.inv.primary || id === a.inv.secondary)) o[id] = { mag: clamp(q.mag | 0, 0, w.mag * 2), res: clamp(q.res | 0, 0, w.res * 2 + 10) }; } for (const id of [a.inv.primary, a.inv.secondary]) if (id && !o[id]) o[id] = a.ammo[id] || { mag: WEAPONS[id].mag, res: WEAPONS[id].res }; a.ammo = o; }
+  if (att && typeof att === 'object') { const o = {}; for (const id in att) { if (!WEAPONS[id] || !att[id] || typeof att[id] !== 'object') continue; const q = att[id], r = {}; if (q.sil) r.sil = 1; if (q.mag) r.mag = 1; if (q.grip) r.grip = 1; if (q.brake) r.brake = 1; if (['red', 'holo', 'acog'].includes(q.sight)) r.sight = q.sight; o[id] = r; } a.att = o; }
+}
+function netPickTeam() {
+  if (G.mode === 'zombie') { let n = 0; ACT.forEach(a => { if (isHuman(a) && !a.puppet) n++; }); return n >= TEAM_MAX ? null : 'CT'; }
+  const cnt = { CT: 0, T: 0 }; ACT.forEach(a => { if (isHuman(a)) cnt[a.team]++; });
+  if (cnt.CT >= TEAM_MAX && cnt.T >= TEAM_MAX) return null;
+  if (cnt.CT >= TEAM_MAX) return 'T'; if (cnt.T >= TEAM_MAX) return 'CT';
+  return cnt.CT < cnt.T ? 'CT' : cnt.T < cnt.CT ? 'T' : (PLAYER.team === 'CT' ? 'T' : 'CT');
+}
+function netRemoveActor(a) { a.alive = false; if (a.mesh) { scene.remove(a.mesh); disposeObj(a.mesh); } const i = ACT.indexOf(a); if (i >= 0) ACT.splice(i, 1); }
+function netSeat(pr, initial) {
+  if (pr.actor) return pr.actor; const team = netPickTeam(); if (!team) return null;
+  const bot = ACT.slice().reverse().find(a => a.team === team && isBotA(a) && !a.zombie); if (bot) netRemoveActor(bot);
+  const a = createBot(pr.name, team, uniformLook(team)); a.remote = true; a.peerId = pr.id; a.op = 'blitz'; a.ai.persona = null; pr.actor = a; pr.in = null; ACT.push(a);
+  a.money = G.mode === 'bomb' ? 800 : G.mode === 'zombie' ? 700 : 0; a.kills = 0; a.deaths = 0; a.lvl = 0; defaultLoadout(a); a.cur = bestWeapon(a); setBotGun(a, a.cur);
+  if (!initial) {
+    if (G.mode === 'dm') { a.alive = false; respawnDM(a); }
+    else if (G.mode === 'bomb' && G.phase === 'freeze') netSpawnPlain(a);
+    else { a.alive = false; a.hp = 0; a.deadT = 99; a.mesh.visible = false; a.respawnT = 3; }
+  }
+  return a;
+}
+function netSpawnPlain(a) {
+  const spawns = (a.team === 'T' ? MAP.spawnT : MAP.spawnCT); let best = spawns[0], bs = -1;
+  for (const s of spawns) { let md = 1e9; for (const e of ACT) if (e !== a && e.alive) md = Math.min(md, Math.hypot(e.x - s.x, e.z - s.z)); if (md > bs) { bs = md; best = s; } }
+  a.x = best.x; a.z = best.z; a.y = 0; a.vx = a.vz = a.vy = 0; a.hp = 100; a.alive = true; a.deadT = 0; a.reloadT = 0; a.drawT = 0; a.flashT = 0; a.scoped = 0; a.crouch = 0; a.protect = 0; a.hurtT = 0;
+  a.yaw = Math.atan2(-(MAP.W * TS / 2 - a.x), -(MAP.H * TS / 2 - a.z)); a.mesh.visible = true; if (a.mesh.userData.tag) a.mesh.userData.tag.visible = true;
+}
+function netUnseat(pr) {
+  const a = pr.actor; pr.actor = null; if (!a) return; const team = a.team; netRemoveActor(a);
+  const b = createBot(BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)], team, uniformLook(team)); b.op = 'blitz'; b.money = 800; ACT.push(b); defaultLoadout(b); b.cur = bestWeapon(b); setBotGun(b, b.cur);
+  if (G.mode === 'dm') { b.alive = false; respawnDM(b); } else { b.alive = false; b.hp = 0; b.deadT = 99; b.mesh.visible = false; b.respawnT = 3; }
+}
+function netLoadout(a) { return { inv: a.inv, ammo: a.ammo, att: a.att, cur: a.cur, ar: a.armor, hl: a.helmet, kit: a.kit, mo: a.money }; }
+function netSendSpawn(a) { // sijainti + varustus + (DM) uudelleensyntyminen
+  if (!a.remote) return; const pr = NET.peers.get(a.peerId); if (!pr) return; pr.tpn++; pr.in = null;
+  pr.evq.push({ k: 'tp', x: r2(a.x), y: r2(a.y), z: r2(a.z), yaw: r2(a.yaw), n: pr.tpn, alive: a.alive ? 1 : 0 }); pr.evq.push(Object.assign(netLoadout(a), { k: 'lo' }));
+}
+function netSendInit(pr) {
+  const a = pr.actor; pr.tpn++; pr.evq = []; pr.w.send({ t: 'init', v: NET_VER, you: a.nid, team: a.team, mode: G.mode, map: G.mapKey, diff: G.diff, wins: G.winsNeeded, ttk: G.ttk, code: NET.code, roster: netRoster(), g: netGState(), tp: { x: r2(a.x), y: r2(a.y), z: r2(a.z), yaw: r2(a.yaw), n: pr.tpn, alive: a.alive ? 1 : 0 }, lo: netLoadout(a) });
+  pr.in = null; NET.rosterKey = '';
+}
+function netBroadcastInit() { [...NET.peers.values()].forEach(pr => { if (!pr.actor) netSeat(pr, true); if (pr.actor) netSendInit(pr); else { pr.w.send({ t: 'full' }); NET.peers.delete(pr.id); setTimeout(() => pr.w.close(), 300); } }); }
+function netRoster() { return ACT.filter(a => !a.remove).map(a => ({ n: a.nid, nm: a.name, tm: a.team, k: a.zombie ? 2 : isHuman(a) ? 1 : 0, l: a.look, zt: a.zt || null })); }
+function netGState() {
+  const B = G.bomb || {}, D = G.dm || { kills: { CT: 0, T: 0 }, time: 0 };
+  return { ph: G.phase, tm: +(G.timer || 0).toFixed(2), rd: G.round, sc: G.scoreCT, st: G.scoreT, dk: [D.kills.CT, D.kills.T], dt: +D.time.toFixed(1), lv: +(G.liveT || 0).toFixed(1), fin: G.final ? 1 : 0, b: [B.planted ? 1 : 0, r2(B.x || 0), r2(B.z || 0), +(B.t || 0).toFixed(2), B.site || '', B.defused ? 1 : 0, B.exploded ? 1 : 0], z: [Z.wave, Z.state === 'wave' ? 1 : 0, Z.kills, Z.queue.length, Z.over ? 1 : 0] };
+}
+function netActs() {
+  return ACT.filter(a => !a.remove).map(a => {
+    const me = a.isPlayer; return [a.nid, r2(a.x), r2(a.y), r2(a.z), r2(me ? P.camYaw : a.yaw), r2(me ? P.camPitch : a.pitch), r1(a.vx), r1(a.vz), (a.alive ? 1 : 0) | (a.scoped ? 2 : 0), Math.max(0, Math.round(a.hp)), a.cur, r2(a.crouch), a.kills | 0, a.deaths | 0, a.money | 0, a.reloadT > 0 && a.reloadTotal ? Math.round((1 - a.reloadT / a.reloadTotal) * 100) : -1];
+  });
+}
+function netMe(a, pr) { return { hp: Math.max(0, Math.round(a.hp)), ar: Math.round(a.armor), hl: a.helmet ? 1 : 0, kit: a.kit ? 1 : 0, mo: a.money | 0, al: a.alive ? 1 : 0, rt: r1(Math.max(0, a.respawnT || 0)), pr: r1(Math.max(0, a.protect || 0)), gn: [a.inv.he | 0, a.inv.flash | 0, a.inv.smoke | 0], tpn: pr.tpn }; }
+function netHostTick(dt) {
+  NET.snapT -= dt; if (NET.snapT > 0) return; NET.snapT = 1 / 20;
+  if (![...NET.peers.values()].some(p => p.actor)) { NET.evAll.length = 0; return; }
+  const key = ACT.map(a => a.nid).join(','); if (key !== NET.rosterKey) { NET.rosterKey = key; const r = { t: 'roster', r: netRoster() }; NET.peers.forEach(p => { if (p.actor) p.w.send(r); }); }
+  const g = netGState(), act = netActs();
+  for (const pr of NET.peers.values()) {
+    if (!pr.actor) continue; const evs = NET.evAll.filter(e => e.ex !== pr.id).concat(pr.evq); pr.evq = [];
+    pr.w.send({ t: 's', g, a: act, me: netMe(pr.actor, pr), ev: evs });
+  }
+  NET.evAll.length = 0;
+}
+
+/* ---------- Isäntä: etäpelaajan päivitys ---------- */
+function updateRemote(a, dt) {
+  const pr = NET.peers.get(a.peerId); if (!pr) return;
+  if (!a.alive) { a.deadT += dt; animateBot(a, dt); if (isDM()) { a.respawnT -= dt; if (a.respawnT <= 0 && G.phase === 'live') { respawnDM(a); netSendSpawn(a); } } return; }
+  if (a.protect > 0) a.protect -= dt; if (a.flashT > 0) a.flashT -= dt; if (a.drawT > 0) a.drawT -= dt; if (a.slowT > 0) a.slowT -= dt; if (a.stunT > 0) a.stunT -= dt;
+  const m = pr.in;
+  if (m) {
+    const k = Math.min(1, dt * 25); a.x += (clamp(m.x, 1, MAP.W * TS - 1) - a.x) * k; a.z += (clamp(m.z, 1, MAP.H * TS - 1) - a.z) * k; a.y = clamp(m.y, 0, 12); a.yaw = m.yaw; a.pitch = m.pitch; a.vx = m.vx; a.vz = m.vz; a.crouch = m.cr; a.scoped = m.sc ? 1 : 0;
+    if (m.cur && m.cur !== a.cur && a.hasWeapon(m.cur)) { a.cur = m.cur; setBotGun(a, a.cur); }
+    a.reloadTotal = 1; a.reloadT = m.rl >= 0 ? Math.max(.02, 1 - m.rl / 100) : 0; a.moveSpd = Math.hypot(a.vx, a.vz);
+    if (a.moveSpd > 3.4 && a.crouch < .4 && !m.wk && a.y < .3) { a.stepD += a.moveSpd * dt; if (a.stepD > 2.3) { a.stepD = 0; AU.step(AU.spat(a.x, a.z, 7), true); emitNoise(a.x, a.z, 26, a.team); } }
+  }
+  animateBot(a, dt);
+}
+
+/* ---------- Laukausefektit (isäntä + asiakkaat) ---------- */
+function netShotOut(a, w, mx, my, mz, pel) {
+  const e = { k: 'shot', a: a.nid, w: w.id, m: [r2(mx), r2(my), r2(mz)], p: pel.map(p => p.map(r2)), sil: a.isPlayer && hasAtt(a, w.id, 'sil') ? 1 : 0 };
+  if (NET.role === 'host') netEv(e, null); else if (NET.role === 'client' && a.isPlayer) netSend({ t: 'fire', w: e.w, m: e.m, p: e.p, sil: e.sil });
+}
+function netShotFx(e) {
+  const a = byNid(e.a), w = WEAPONS[e.w]; if (!w || a === PLAYER) return; const m = e.m;
+  for (const p of e.p) { tracer(m[0], m[1], m[2], p[0], p[1], p[2], .026); if (p[3] === 1) { spawnImpact({ x: p[0], y: p[1], z: p[2] }, { x: p[4], y: p[5], z: p[6] }, true, MAP.theme); if (Math.hypot(p[0] - camera.position.x, p[2] - camera.position.z) < 25) AU.impact(AU.spat(p[0], p[2], 6), true); } }
+  const sp = AU.spat(m[0], m[2], e.sil ? 4 : 14); AU.shot(w.snd, e.sil ? { vol: sp.vol * .3, pan: sp.pan } : sp);
+  if (!e.sil) { muzzleFlash3D(m[0], m[1], m[2]); lightFlash(m[0], m[1], m[2], 0xffc070, 1.2, .05); }
+  if (a) { a.kick = Math.min(1, a.kick + .8); if (P.spec === a && !PLAYER.alive) { VM.kick = Math.min(VM.kick + 1, 2.2); VM.flashT = .045; } }
+}
+
+/* ---------- Asiakas ---------- */
+function netJoinOpen(code) {
+  if (NET.role !== 'off') return; code = String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6); if (code.length < 3) { netUi('Anna huoneen koodi'); return; }
+  NET.role = 'client'; NET.code = code; NET.started = false; netUi('Yhdistetään huoneeseen ' + code + '…'); refreshOnline();
+  NET.tr = trJoin(code, {
+    onOpen: w => { NET.conn = w; w.onmsg = m => { try { clientOnMsg(m); } catch (e) { reportErr(e, 'verkko'); } }; w.onclose = clientOnClose; w.send({ t: 'hello', v: NET_VER, name: S.name }); netUi('Yhdistetty – odotetaan isäntää…'); refreshOnline(); },
+    onError: t => netFail(t === 'peer-unavailable' ? 'Huonetta ei löytynyt – tarkista koodi' : t === 'nolib' ? 'PeerJS-kirjasto ei latautunut (tarkista nettiyhteys)' : 'Yhteysvirhe (' + t + ')')
+  });
+  NET.joinT = setTimeout(() => { if (NET.role === 'client' && !NET.conn) netFail('Yhteys huoneeseen aikakatkaistiin'); }, 20000);
+}
+function clientOnClose() { if (NET.role !== 'client') return; const inGame = G.running; toast('⚠', 'YHTEYS KATKESI', 'Isäntä poistui tai yhteys katosi'); if (inGame) toMenu(); netLeave(); refreshOnline(); }
+function clientOnMsg(m) {
+  switch (m.t) {
+    case 'lobby': NET.lobby = m; refreshOnline(); break;
+    case 'init': clientBegin(m); break;
+    case 'roster': clientSyncRoster(m.r); break;
+    case 's': clientOnSnap(m); break;
+    case 'pong': NET.ping = Math.round(performance.now() - m.c); break;
+    case 'full': netFail('Huone on täynnä'); break;
+    case 'bad': netFail(String(m.msg).slice(0, 80)); break;
+  }
+}
+function makePuppet(r) {
+  let a;
+  if (r.k === 2) {
+    const T = ZT[r.zt] || ZT.walker; a = createBot(T.name, 'T', r.l); a.zombie = true; a.zt = r.zt; a.sc = T.sc; a.r = .36 * Math.min(1.5, T.sc); a.mesh.scale.setScalar(T.sc); a.mesh.userData.tag.visible = false; a.mesh.userData.gunSlot.visible = false; a.cur = 'knife'; a.mesh.traverse(o => { if (o.isMesh) o.castShadow = false; }); a.groanT = rnd(1, 5);
+  } else { a = createBot(r.nm, r.tm, r.l); a.cur = 'knife'; }
+  a.name = String(r.nm).replace(/[<>&"']/g, '').slice(0, 16); a.nid = r.n; a.puppet = true; a.human = r.k === 1; a.op = null; a.tx = a.x; a.tz = a.z; a.ty = 0; a.tyaw = 0; a.tvx = 0; a.tvz = 0; a.tcr = 0; a.fresh = true; return a;
+}
+function clientSyncRoster(list) {
+  const ids = new Set(list.map(r => r.n));
+  for (const a of ACT.slice()) if (a.puppet && !ids.has(a.nid)) netRemoveActor(a);
+  for (const r of list) { if (r.n === NET.me) continue; if (!byNid(r.n)) ACT.push(makePuppet(r)); }
+}
+function clientBegin(m) {
+  NET.me = m.you; NET.started = true; NET.tpn = m.tp.n; clearTimeout(NET.joinT);
+  G.mode = m.mode; G.mapKey = m.map; G.mapSel = m.map; G.diff = m.diff; G.winsNeeded = m.wins; G.ttk = m.ttk; G.side = m.team; G.botsPer = 5; G.op = 'blitz';
+  clearActors(); clearMenuBots(); clearBarriers(); P.statsDone = false; P.hsReset = 1; buildWorld(G.mapKey); AMB.start(MAP.theme);
+  G.scoreCT = 0; G.scoreT = 0; G.round = m.g.rd; G.streak = { CT: 0, T: 0 }; G.dm = { kills: { CT: 0, T: 0 }, time: DM_TIME }; G.t = 0; G.paused = false; G.liveT = 0; G.slowT = 0; G.ts = 1; G.final = false; zReset();
+  G.bomb = { planted: false, planting: false, planter: null, defuser: null, x: 0, z: 0, t: BOMB_T, site: null, beep: 0, mesh: null, led: 0 };
+  GR.forEach(g => scene.remove(g.mesh)); GR.length = 0; clearDrops(); PA.clear(); PN.clear(); FX.decals.forEach(d => d.visible = false);
+  PLAYER = new Actor((S.name || 'Pelaaja').slice(0, 14), m.team, true); PLAYER.nid = m.you; PLAYER.op = 'blitz'; ACT.push(PLAYER); defaultLoadout(PLAYER); PLAYER.kills = 0; PLAYER.deaths = 0;
+  clientSyncRoster(m.roster); setVMTeam(m.team);
+  Object.assign(P, { punchP: 0, punchY: 0, flash: 0, throwT: 0, shake: 0, scoped: 0, spec: null, specMode: 0, killInfo: null, killcam: false, manualSpec: false, camS: null, adsHeld: false, adsK: 0, roundKills: 0 });
+  clientApplyG(m.g); clientApplyTp(m.tp); clientApplyLo(m.lo); PLAYER.alive = !!m.tp.alive; PLAYER.hp = PLAYER.alive ? 100 : 0;
+  if (!PLAYER.alive) { PLAYER.deadT = 0; P.deadTime = 0; P.free = { x: PLAYER.x, y: PLAYER.y + 1.6, z: PLAYER.z }; }
+  if (m.g.b[0]) bombVisual(m.g.b[1], m.g.b[2], m.g.b[4], true);
+  G.running = true; NET.lastSnap = performance.now(); NET.snapT = 0; NET.inT = 0; NET.pingT = 0;
+  ['pause', 'end', 'buy', 'score', 'clickGo', 'opick'].forEach(i => { const e = $(i); if (e) e.classList.add('hidden'); }); $('menu').classList.add('hidden'); $('loading').classList.add('hidden'); $('hud').classList.remove('hidden'); P.ui = false; applyCrosshair(); MUS.stop(); lockPointer(); netHudOn();
+  hudMsg('MONINPELI', 'Liityit huoneeseen ' + esc(NET.code), '#4be08a');
+}
+function netHudOn() { const e = $('netInfo'); if (e) e.classList.remove('hidden'); const b = $('opBtn'); if (b) b.style.display = 'none'; }
+function clientApplyG(g) {
+  const B = G.bomb; G.phase = g.ph; G.timer = g.tm; G.round = g.rd; G.scoreCT = g.sc; G.scoreT = g.st; G.dm.kills.CT = g.dk[0]; G.dm.kills.T = g.dk[1]; G.dm.time = g.dt; G.liveT = g.lv; G.final = !!g.fin;
+  B.t = g.b[3]; B.defused = !!g.b[5]; B.exploded = !!g.b[6];
+  if (g.b[0] && !B.planted) { B.planted = true; B.x = g.b[1]; B.z = g.b[2]; B.site = g.b[4]; if (!B.mesh) bombVisual(B.x, B.z, B.site, true); } else if (!g.b[0] && B.planted) { B.planted = false; if (B.led) B.led.visible = false; $('timer').classList.remove('bomb'); }
+  Z.wave = g.z[0]; Z.state = g.z[1] ? 'wave' : 'break'; Z.kills = g.z[2]; if (Z.queue.length !== g.z[3]) Z.queue = new Array(g.z[3]); Z.over = !!g.z[4];
+}
+function clientApplyTp(e) { const p = PLAYER; p.x = e.x; p.y = e.y; p.z = e.z; p.yaw = e.yaw; p.pitch = 0; p.vx = p.vz = p.vy = 0; p.onGround = true; P.camYaw = e.yaw; P.punchP = P.punchY = 0; NET.tpn = e.n; }
+function clientApplyLo(e) {
+  const p = PLAYER; p.inv = e.inv; p.ammo = e.ammo; p.att = e.att || {}; p.armor = e.ar; p.helmet = !!e.hl; p.kit = !!e.kit; p.money = e.mo; p.reloadT = 0; p.scoped = 0;
+  if (e.cur && p.cur !== e.cur) { p.cur = e.cur; p.drawT = drawTimeOf(e.cur); } showVM(p.cur); refreshVMAtt();
+}
+function clientOnSnap(m) {
+  NET.lastSnap = performance.now(); const p = PLAYER; if (!p) return;
+  for (const e of m.ev) { try { clientOnEv(e); } catch (er) { console.error('ev', e.k, er); } }
+  clientApplyG(m.g);
+  for (const e of m.a) {
+    const a = byNid(e[0]); if (!a) continue; a.kills = e[12]; a.deaths = e[13]; a.money = e[14]; if (a === p) continue;
+    const alive = !!(e[8] & 1); a.tx = e[1]; a.ty = e[2]; a.tz = e[3]; a.tyaw = e[4]; a.pitch = e[5]; a.tvx = e[6]; a.tvz = e[7]; a.hp = e[9]; a.tcr = e[11]; a.scoped = (e[8] & 2) ? 1 : 0;
+    if (!a.zombie && e[10] && a.cur !== e[10]) { a.cur = e[10]; setBotGun(a, a.cur); }
+    a.reloadTotal = 1; a.reloadT = e[15] >= 0 ? Math.max(.02, 1 - e[15] / 100) : 0;
+    if (a.alive && !alive) puppetDie(a, 'back'); else if (!a.alive && alive) puppetRevive(a);
+  }
+  const me = m.me; if (me.tpn !== NET.tpn) { /* odotetaan tp-tapahtumaa */ }
+  p.hp = me.hp; p.armor = me.ar; p.helmet = !!me.hl; p.kit = !!me.kit; p.money = me.mo; p.protect = me.pr; p.respawnT = me.rt; p.inv.he = me.gn[0]; p.inv.flash = me.gn[1]; p.inv.smoke = me.gn[2];
+  if (p.alive && !me.al) clientDie(null, null, false); else if (!p.alive && me.al && !P.killcam) { p.alive = true; }
+}
+function puppetDie(a, ty) { a.alive = false; a.deadT = 0; a.deathType = ty; a.reloadT = 0; a.scoped = 0; a.bodyRoll = rnd(-.3, .3); if (a.mesh.userData.tag) a.mesh.userData.tag.visible = false; }
+function puppetRevive(a) { a.alive = true; a.deadT = 0; a.x = a.tx; a.z = a.tz; a.y = a.ty; a.mesh.visible = true; a.mesh.rotation.set(0, a.tyaw, 0); if (a.mesh.userData.tag && !a.zombie) a.mesh.userData.tag.visible = true; a.mesh.userData.gunId = null; a.kick = 0; if (a.cur && !a.zombie) setBotGun(a, a.cur); }
+function clientDie(k, w, hs) { const p = PLAYER; if (!p.alive) return; p.alive = false; p.hp = 0; p.deadT = 0; p.reloadT = 0; p.scoped = 0; closeBuy(false); onPlayerDeath(k, w || { name: '?' }, hs); }
+function clientOnEv(e) {
+  const p = PLAYER;
+  switch (e.k) {
+    case 'shot': netShotFx(e); break;
+    case 'bl': spawnBlood(e.x, e.y, e.z, e.dx, e.dz, e.n, !!e.big); break;
+    case 'kill': {
+      const v = byNid(e.v), k = byNid(e.k2); if (!v) break;
+      if (v !== p) { puppetDie(v, e.ty || 'back'); v.hp = 0; }
+      addFeed(k, v, { short: String(e.sh).replace(/[<>&"']/g, '').slice(0, 14), name: '' }, !!e.hs); AU.die(AU.spat(v.x, v.z, 10)); decal('blood', { x: v.x, y: .01, z: v.z }, { x: 0, y: 1, z: 0 }, 1.6); if (S.particles) spawnBlood(v.x, v.y + 1.2, v.z, 0, 0, 22, true);
+      if (k === p && v !== p && v.team !== p.team) { hitMarker(true, !!e.hs); AU.hit(true); if (!v.zombie) { trackEvent('kill'); P.roundKills = (P.roundKills || 0) + 1; if (P.roundKills === 5) trackEvent('ace'); } else trackEvent('zkill'); if (e.hs) trackEvent('hs'); if (e.sh === 'AWP') trackEvent('awp'); if (e.sh === 'HE') trackEvent('he'); if (e.wid === 'knife') trackEvent('knife'); }
+      break;
+    }
+    case 'died': { const k = byNid(e.k2); clientDie(k, { name: String(e.sh).replace(/[<>&"']/g, '').slice(0, 14) }, !!e.hs); break; }
+    case 'hurt': { const k = byNid(e.k2) || { x: e.x, z: e.z }; onPlayerHurt(k, e.hp); break; }
+    case 'gren': { const o = byNid(e.o) || p, m = buildGun(e.id, false); m.scale.setScalar(1.3); scene.add(m); GR.push({ gid: e.gid, id: e.id, x: e.x, y: e.y, z: e.z, vx: e.vx, vy: e.vy, vz: e.vz, t: 0, fuse: 99, owner: o, mesh: m, rest: false, rx: rnd(TAU), spin: rnd(6, 12), net: 1 }); AU.throwS(); break; }
+    case 'det': { let i = GR.findIndex(g => g.gid === e.gid), g; if (i >= 0) { g = GR[i]; g.x = e.x; g.y = e.y; g.z = e.z; scene.remove(g.mesh); GR.splice(i, 1); } else g = { id: e.id, x: e.x, y: e.y, z: e.z, owner: p, net: 1 }; detonate(g); break; }
+    case 'flash': P.flash = e.dur; p.flashT = Math.max(p.flashT, e.dur); AU.ring(e.dur + 1.5); break;
+    case 'round': clientRoundReset(e); break;
+    case 'live': hudMsg('ALOITA!', '', '#4be08a'); AU.horn(); closeBuy(false); break;
+    case 'plant': { const B = G.bomb; B.planted = true; B.x = e.x; B.z = e.z; B.t = BOMB_T; B.site = e.site; B.beep = 0; bombVisual(e.x, e.z, e.site, false); break; }
+    case 'defuse': { G.bomb.planted = false; AU.defuse(); G.bomb.defused = true; if (G.bomb.led) G.bomb.led.visible = false; break; }
+    case 'boom': { G.bomb.planted = false; G.bomb.exploded = true; bombBoomFx(e.x, e.z); break; }
+    case 'end': { G.scoreCT = e.sc[0]; G.scoreT = e.sc[1]; G.final = !!e.fin; G.phase = 'end'; G.timer = END_T; const mine = e.w === p.team; hudMsg(e.w === 'CT' ? 'VASTATERRORISTIT VOITTAVAT' : 'TERRORISTIT VOITTAVAT', esc(e.r), e.w === 'CT' ? '#5aa9ff' : '#ff9a3d'); mine ? AU.win() : AU.lose(); $('timer').classList.remove('bomb'); G.endWinner = e.w; break; }
+    case 'mend': G.phase = 'matchend'; if (e.z) showEndZ(); else showEnd(e.w); break;
+    case 'tp': clientApplyTp(e); break;
+    case 'rs': p.alive = true; p.hp = 100; p.deadT = 0; $('deadOv').style.opacity = 0; P.spec = null; P.specMode = 0; P.killInfo = null; P.killcam = false; P.camS = null; p.pitch = 0; p.reloadT = 0; break;
+    case 'lo': clientApplyLo(e); if (e.buy === 1) { AU.buy(); buildBuy(); } else if (e.buy === 0) AU.deny(); break;
+    case 'zw': hudMsg('AALTO ' + (+e.wave | 0), e.boss ? '⚠ BOSS-AALTO ⚠' : 'Zombeja: ' + (+e.n | 0), e.boss ? '#ff2a3d' : '#ff6a3d'); AU.waveStart(); closeBuy(false); break;
+    case 'zc': hudMsg('AALTO ' + (+e.wave | 0) + ' SELVITTY', 'Bonus $' + (+e.bonus | 0) + ' · seuraava aalto alkaa pian', '#4be08a'); AU.waveClear(); break;
+    case 'claw': { const a = byNid(e.a); if (a) { a.kick = 1; AU.claw(AU.spat(a.x, a.z, 8)); } break; }
+  }
+}
+function clientRoundReset(e) {
+  const B = G.bomb; if (B && B.mesh) { scene.remove(B.mesh); disposeObj(B.mesh); }
+  G.bomb = { planted: false, planting: false, planter: null, defuser: null, x: 0, z: 0, t: BOMB_T, site: null, beep: 0, mesh: null, led: 0 };
+  GR.forEach(g => scene.remove(g.mesh)); GR.length = 0; SMOKES.forEach(s => s.puffs.forEach(q => { scene.remove(q.s); q.s.material.dispose(); })); SMOKES.length = 0;
+  PA.clear(); PN.clear(); FX.decals.forEach(d => d.visible = false); clearDrops(); G.round = e.r;
+  P.roundKills = 0; P.crouchLatch = false; P.adsHeld = false; P.spec = null; P.specMode = 0; P.killInfo = null; P.killcam = false; P.manualSpec = false; P.camS = null; P.punchP = P.punchY = 0; P.flash = 0; $('deadOv').style.opacity = 0; $('hurtOv').style.opacity = 0; $('timer').classList.remove('bomb');
+  ACT.forEach(a => { if (a.puppet && !a.alive && !a.zombie) puppetRevive(a); });
+  if (G.mode === 'zombie') { if (!Z.wave) hudMsg('ZOMBIAALLOT', 'Osta aseita [B] · ensimmäinen aalto alkaa pian', '#ff6a3d'); } else hudMsg(G.mode === 'bomb' ? 'KIERROS ' + G.round : 'TIIMIKUOLEMANKAMPPAILU', G.mode === 'bomb' ? 'Osta aseita [B] · ostoaikaa ' + (FREEZE_T + BUY_WINDOW) + ' s' : 'Ensin ' + DM_LIMIT + ' tappoa voittaa', '#ffb020');
+  AU.horn(); closeBuy(true);
+}
+
+/* ---------- Asiakkaan peli-silmukka ---------- */
+function updateClientGame(dt) {
+  const p = PLAYER; G.t += dt; const B = G.bomb;
+  if (G.phase === 'freeze' || G.phase === 'live' || G.phase === 'end' || G.phase === 'break') { if (G.phase === 'live') { G.liveT += dt; if (G.mode !== 'bomb' || !B.planted) G.timer -= dt; } else G.timer -= dt; if (G.mode !== 'bomb' && G.dm) G.dm.time = Math.max(0, G.dm.time - (G.phase === 'live' ? dt : 0)); }
+  if (B.planted) { B.t -= dt; G.timer = B.t; B.beep -= dt; if (B.beep <= 0) { const f = clamp(B.t / BOMB_T, 0, 1); B.beep = lerp(.1, 1.0, f * f); AU.beep(AU.spat(B.x, B.z, 12), B.t < 10); if (B.led) { B.led.material.opacity = 1; B.ledT = .08; } } if (B.ledT > 0) { B.ledT -= dt; if (B.ledT <= 0 && B.led) B.led.material.opacity = .12; } }
+  if (G.mode === 'bomb' && G.liveT > BUY_WINDOW && !$('buy').classList.contains('hidden')) closeBuy(false);
+  updatePlayer(dt); if (p.alive) updateVM(dt, p);
+  netPuppets(dt); updateGrenades(dt); updateDrops(dt); updateFX(dt); if (!p.alive) updateSpectate(dt);
+  if (P.flash > 0) P.flash -= dt; if (p.flashT > 0) p.flashT -= dt; if (p.protect > 0) p.protect -= dt; p.hurtT -= dt;
+  // lähetys
+  NET.inT -= dt; if (NET.inT <= 0 && NET.conn) {
+    NET.inT = 1 / 30; const w = p.weapon();
+    netSend({ t: 'in', x: r2(p.x), y: r2(p.y), z: r2(p.z), yaw: r2(P.camYaw), pitch: r2(P.camPitch), vx: r1(p.vx), vz: r1(p.vz), cr: r2(p.crouch), cur: p.cur, wk: (K.ShiftLeft || K.ShiftRight || P.padWalk) ? 1 : 0, sc: p.scoped ? 1 : 0, rl: p.reloadT > 0 && p.reloadTotal ? Math.round((1 - p.reloadT / p.reloadTotal) * 100) : -1, tp: NET.tpn });
+  }
+  NET.pingT -= dt; if (NET.pingT <= 0) { NET.pingT = 2; netSend({ t: 'ping', c: performance.now() }); }
+  if (performance.now() - NET.lastSnap > 8000 && NET.lastSnap) { NET.lastSnap = 0; toast('⚠', 'YHTEYS KATKESI', 'Isäntä ei vastaa'); toMenu(); }
+}
+function netPuppets(dt) {
+  for (const a of ACT) {
+    if (!a.puppet) continue;
+    if (a.alive) {
+      const k = 1 - Math.exp(-dt * 16), dx = a.tx - a.x, dz = a.tz - a.z;
+      if (a.fresh || dx * dx + dz * dz > 36) { a.x = a.tx; a.z = a.tz; a.y = a.ty; a.fresh = false; } else { a.x += dx * k; a.z += dz * k; a.y += (a.ty - a.y) * k; }
+      a.yaw += angDiff(a.yaw, a.tyaw) * Math.min(1, k * 1.4); a.vx += (a.tvx - a.vx) * k; a.vz += (a.tvz - a.vz) * k; a.crouch += (a.tcr - a.crouch) * k; a.moveSpd = Math.hypot(a.vx, a.vz);
+      if (a.zombie) { a.groanT -= dt; if (a.groanT <= 0) { a.groanT = rnd(3, 8); const sp = AU.spat(a.x, a.z, 9); if (sp.vol > .05) AU.zombie(sp, a.zt); } }
+      else if (a.moveSpd > 3.3 && a.crouch < .4) { a.stepD += a.moveSpd * dt; if (a.stepD > 2.3) { a.stepD = 0; AU.step(AU.spat(a.x, a.z, 7), true); } }
+      if (a.drawT > 0) a.drawT -= dt;
+    } else a.deadT += dt;
+    animateBot(a, dt);
+  }
+}
+
+/* ---------- Käyttöliittymän yhdistäminen ---------- */
+function netLeave() {
+  clearTimeout(NET.joinT); if (NET.bg) { NET.bg.terminate(); NET.bg = null; }
+  try { NET.peers.forEach(p => p.w.close()); if (NET.conn) NET.conn.close(); if (NET.tr) NET.tr.close(); } catch (e) { }
+  NET.role = 'off'; NET.tr = null; NET.conn = null; NET.peers.clear(); NET.started = false; NET.evAll = []; NET.me = 0; NET.lobby = {}; NET.rosterKey = '';
+  const n = $('netInfo'); if (n) n.classList.add('hidden'); const b = $('opBtn'); if (b) b.style.display = '';
+  if (NET.prevBots != null) { G.botsPer = NET.prevBots; NET.prevBots = null; }
+}
+function netHostStart() {
+  if (NET.role !== 'host') return; if (!MP_MODES.includes(G.mode)) G.mode = 'bomb'; if (NET.prevBots == null) NET.prevBots = G.botsPer; G.botsPer = TEAM_MAX; NET.started = true; hostBroadcastLobby(); netHudOn(); beginGame(); netStartBg();
+}
+function netStartBg() { // isäntä jatkaa pelin pyörittämistä vaikka välilehti olisi taustalla
+  if (NET.bg || NET.role !== 'host') return; try { const url = URL.createObjectURL(new Blob(['setInterval(()=>postMessage(0),33)'], { type: 'text/javascript' })); NET.bg = new Worker(url); NET.lastTick = performance.now(); NET.bg.onmessage = () => { if (document.visibilityState !== 'hidden' || !G.running || NET.role !== 'host') { NET.lastTick = performance.now(); return; } const now = performance.now(), dt = Math.min(.05, (now - NET.lastTick) / 1000); NET.lastTick = now; try { updateGame(dt); } catch (e) { console.error('bg', e); } }; } catch (e) { }
+}
+function netInfoText() {
+  if (NET.role === 'host') return 'ONLINE · ISÄNTÄ · KOODI ' + NET.code + ' · ' + (1 + NET.peers.size) + ' PELAAJAA';
+  return 'ONLINE · KOODI ' + NET.code + ' · PING ' + NET.ping + ' ms';
+}
+
+addEventListener('pagehide', () => { if (NET.role !== 'off') { try { netLeave(); } catch (e) { } } });
+
+/* =====================================================================
+   MONINPELI: valikkosivu ja aulanäkymä
+   ===================================================================== */
+const MODE_FI = { bomb: 'POMMIN KUOLETUS', dm: 'TIIMIKUOLEMANKAMPPAILU', zombie: 'ZOMBIAALLOT (YHTEISTYÖ)' };
+function olSyncSegs() {
+  const mark = (id, v) => { const s = $(id); if (s) s.querySelectorAll('[data-v]').forEach(b => b.classList.toggle('sel', b.dataset.v === String(v))); };
+  mark('olModeSeg', G.mode); mark('olSideSeg', G.side); mark('olDiffSeg', G.diff); mark('olWinsSeg', G.winsNeeded);
+  const m = $('olMap'); if (m && m.value !== G.mapSel) m.value = G.mapSel;
+  $('olWinsWrap').style.display = G.mode === 'bomb' ? '' : 'none'; $('olSideWrap').style.display = G.mode === 'zombie' ? 'none' : '';
+}
+function refreshOnline() {
+  const box = $('olLobbyBox'); if (!box) return; const role = NET.role, lob = NET.lobby || {};
+  $('olHome').style.display = role === 'off' ? '' : 'none'; $('olConfig').style.display = role === 'client' ? 'none' : ''; box.style.display = role === 'off' ? 'none' : '';
+  $('olStart').style.display = role === 'host' && !NET.started ? '' : 'none'; $('olCodeTxt').textContent = NET.code || '—';
+  const players = role === 'host' ? [S.name + ' · ISÄNTÄ'].concat([...NET.peers.values()].map(p => p.name)) : (lob.players || []).map((n, i) => i === 0 ? n + ' · ISÄNTÄ' : n);
+  $('olPlayers').innerHTML = players.map(n => `<div class="olp">${esc(n)}</div>`).join('') || '<div class="olp dim">Ei pelaajia</div>';
+  const info = role === 'client' && lob.mode ? `<div class="hint2">${MODE_FI[lob.mode] || ''} · ${lob.map === 'RANDOM' ? 'SATUNNAINEN KARTTA' : (MAPDEFS[lob.map] ? MAPDEFS[lob.map].name : '')}</div>` : '';
+  $('olInfo').innerHTML = info; olSyncSegs();
+  $('olStatus').style.color = '';
+}
+function initOnlineUi() {
+  const m = $('olMap'); Object.keys(MAPDEFS).forEach(k => { const o = document.createElement('option'); o.value = k; o.textContent = MAPDEFS[k].name; m.appendChild(o); }); { const o = document.createElement('option'); o.value = 'random'; o.textContent = 'SATUNNAINEN'; m.appendChild(o); }
+  m.onchange = () => { AU.click(); G.mapSel = m.value; if (m.value !== 'random') { G.mapKey = m.value; buildWorld(G.mapKey); spawnMenuBots(); } persistCfg(); if (NET.role === 'host') hostBroadcastLobby(); };
+  const seg = (id, fn) => { $(id).querySelectorAll('button').forEach(b => b.onclick = () => { AU.click(); fn(b.dataset.v); persistCfg(); olSyncSegs(); if (NET.role === 'host') hostBroadcastLobby(); }); };
+  seg('olModeSeg', v => G.mode = v); seg('olSideSeg', v => G.side = v); seg('olDiffSeg', v => G.diff = +v); seg('olWinsSeg', v => G.winsNeeded = +v);
+  $('olCreate').onclick = () => { AU.click(); AU.init(); if (!MP_MODES.includes(G.mode)) G.mode = 'bomb'; netHostOpen(); };
+  $('olJoin').onclick = () => { AU.click(); AU.init(); netJoinOpen($('olCode').value); };
+  $('olCode').addEventListener('keydown', e => { e.stopPropagation(); if (e.code === 'Enter') $('olJoin').click(); }); $('olCode').addEventListener('input', () => { $('olCode').value = $('olCode').value.toUpperCase().replace(/[^A-Z0-9]/g, ''); });
+  $('olStart').onclick = () => { AU.click(); netHostStart(); };
+  $('olLeave').onclick = () => { AU.click(); netLeave(); refreshOnline(); netUi(''); };
+  $('olCopy').onclick = () => { AU.click(); const url = location.origin + location.pathname + '?room=' + NET.code; try { navigator.clipboard.writeText(url); $('olStatus').textContent = 'Linkki kopioitu: ' + url; } catch (e) { $('olStatus').textContent = url; } };
+  const q = /[?&]room=([A-Za-z0-9]+)/.exec(location.search); if (q) { $('olCode').value = q[1].toUpperCase().slice(0, 6); const t = setInterval(() => { if (!$('splash')) { clearInterval(t); showPage('online'); } }, 300); }
+  olSyncSegs(); refreshOnline();
+}
+function buildOnline() { if (!MP_MODES.includes(G.mode) && NET.role === 'off') G.mode = 'bomb'; olSyncSegs(); refreshOnline(); }
 
 /* =====================================================================
    KÄYTTÖLIITTYMÄ: HUD, ostovalikko, pistetaulu, asetukset, valikko
@@ -3402,10 +3890,11 @@ function slotsHtml(p) {
   return out.join('');
 }
 let crossG = 4, fpsT = 0, fpsN = 0;
-function canBuy() { if (!PLAYER || !PLAYER.alive) return false; if (G.mode === 'arms') return false; if (isDM()) return G.phase === 'live'; if (G.mode === 'zombie') return G.phase === 'break'; return G.phase === 'freeze' || (G.phase === 'live' && G.liveT < BUY_WINDOW); }
+function canBuyFor(a) { if (!a || !a.alive) return false; if (G.mode === 'arms') return false; if (isDM()) return G.phase === 'live'; if (G.mode === 'zombie') return G.phase === 'break'; return G.phase === 'freeze' || (G.phase === 'live' && G.liveT < BUY_WINDOW); }
+function canBuy() { return canBuyFor(PLAYER); }
 function abFxTrigger(op) { const e = E('abFx'); e.className = ''; void e.offsetWidth; e.className = 'fx-' + op; }
 function updateAbilityHUD(dt) {
-  const p = PLAYER, op = OPS[p.op]; E('abil').style.display = op ? 'flex' : 'none'; if (!op) return;
+  const p = PLAYER, op = netOn() ? null : OPS[p.op]; E('abil').style.display = op ? 'flex' : 'none'; if (!op) return;
   const ring = E('abRing'), ready = p.abCd <= 0, frac = ready ? 1 : 1 - p.abCd / (p.abMax || op.cd);
   ring.style.setProperty('--p', Math.round(frac * 360) + 'deg'); ring.style.setProperty('--c', op.col); E('abTxt').style.setProperty('--c', op.col); ring.classList.toggle('ready', ready); setT('abIcon', op.icon); setT('abName', op.ab.toUpperCase() + (op.charges ? ' ×' + (p.charges || 0) : ''));
   const k = E('abKey'); const t = ready ? ((G.phase === 'freeze') ? 'VALMIS · ALKAA PIAN' : 'VALMIS · [' + GLY.ability() + ']') : Math.ceil(p.abCd) + ' s'; if (k._v !== t) { k._v = t; k.textContent = t; k.className = ready ? 'rdy' : ''; }
@@ -3419,7 +3908,7 @@ function updateHUD(dt) {
   const bl = G.mode === 'zombie' ? Math.max(0, Math.ceil(G.timer)) : G.mode === 'bomb' ? Math.max(0, Math.ceil(G.phase === 'freeze' ? G.timer + BUY_WINDOW : BUY_WINDOW - G.liveT)) : 0;
   setT('money', G.mode === 'arms' ? 'TASO ' + ((p.lvl || 0) + 1) + '/' + ARMS.length : isDM() ? 'VAPAA OSTO' : fmtMoney(p.money)); setT('buyHint', canBuy() ? '[' + GLY.buy() + '] OSTOVALIKKO' + (bl ? ' · ' + bl + ' s' : '') : ''); if (!$('buy').classList.contains('hidden')) setT('buyHintTxt', 'Klikkaa ostaaksesi · B tai Esc sulkee' + (bl ? ' · ostoaikaa jäljellä ' + bl + ' s' : ''));
   setT('wName', w.name.toUpperCase());
-  if (w.type === 'knife') { setT('aMag', '—'); setT('aRes', ''); E('ammo').classList.remove('low'); } else if (w.type === 'nade') { setT('aMag', s.inv[w.id]); setT('aRes', ''); } else { const am = s.ammo[w.id]; setT('aMag', am.mag); setT('aRes', '/ ' + am.res); E('ammo').classList.toggle('low', am.mag <= Math.ceil(w.mag * .25)); }
+  if (w.type === 'knife') { setT('aMag', '—'); setT('aRes', ''); E('ammo').classList.remove('low'); } else if (w.type === 'nade') { setT('aMag', s.inv[w.id]); setT('aRes', ''); } else if (!s.ammo[w.id]) { setT('aMag', '—'); setT('aRes', ''); E('ammo').classList.remove('low'); } else { const am = s.ammo[w.id]; setT('aMag', am.mag); setT('aRes', '/ ' + am.res); E('ammo').classList.toggle('low', am.mag <= Math.ceil(w.mag * .25)); }
   setH('wSlots', slotsHtml(s));
   // yläpalkki
   if (G.mode === 'zombie') { setT('ctLbl', 'AALTO'); setT('tLbl', 'ZOMBEJA'); setT('ctScore', Z.wave); setT('tScore', zombiesAlive() + Z.queue.length); setT('roundLbl', Z.state === 'break' ? 'VALMISTAUDU' : 'AALTO ' + Z.wave); setT('timerTxt', Z.state === 'break' ? mmss(G.timer) : '☣ ' + (zombiesAlive() + Z.queue.length)); setT('ctAlive', humansAlive() + ' ELOSSA'); setT('tAlive', Z.kills + ' TAPPOA'); }
@@ -3436,7 +3925,7 @@ function updateHUD(dt) {
   // ylikerrokset
   let hv = parseFloat(E('hurtOv').style.opacity) || 0; hv = Math.max(0, hv - dt * 1.3); const low = p.alive && p.hp < 30 ? (.25 + .15 * Math.sin(performance.now() / 180)) : 0; E('hurtOv').style.opacity = Math.max(hv, low);
   E('flashOv').style.opacity = P.flash > 0 ? clamp(P.flash / 1.6, 0, 1) : 0;
-  updateSpecHUD(dt); updateAbilityHUD(dt); E('replayHint').classList.toggle('hidden', !replayAvailable()); if (replayAvailable()) setT('replayHint', GLY.replay() + ' · KATSO UUSINTA');
+  if (netOn()) setT('netInfo', netInfoText()); updateSpecHUD(dt); updateAbilityHUD(dt); E('replayHint').classList.toggle('hidden', !replayAvailable()); if (replayAvailable()) setT('replayHint', GLY.replay() + ' · KATSO UUSINTA');
   drawRadar(dt);
   if (S.fps) { fpsN++; fpsT += dt; if (fpsT > .5) { setT('fps', Math.round(fpsN / fpsT) + ' FPS'); fpsN = 0; fpsT = 0; } } else setT('fps', '');
 }
@@ -3506,10 +3995,11 @@ function buildBuy() {
   E('buyGrid').querySelectorAll('.bi').forEach(b => { b.onclick = () => buyItem(PLAYER, b.dataset.id); b.onmouseenter = () => AU.hover(); });
 }
 function buyItem(a, id) {
-  const it = ITEMS[id], free = isDM(), cost = free ? 0 : it.cost; if (!canBuy() || owns(a, id) || a.money < cost || (ATTS[id] && !attOK(a, id))) { AU.deny(); return false; }
+  const it = ITEMS[id]; if (!it) return false; const free = isDM(), cost = free ? 0 : it.cost; if (!canBuyFor(a) || owns(a, id) || a.money < cost || (ATTS[id] && !attOK(a, id))) { if (a.isPlayer) AU.deny(); return false; }
+  if (NET.role === 'client' && a.isPlayer) { netSend({ t: 'buy', id, am: a.ammo, att: a.att, cur: a.cur }); return true; }
   a.money -= cost; const w = WEAPONS[id];
   if (w && w.type !== 'nade') { giveWeapon(a, id); if (w.slot === 1 || !a.inv.primary) { a.cur = '_'; selectWeapon(a, id); } } else applyItem(a, id);
-  AU.buy(); buildBuy(); return true;
+  if (a.isPlayer) { AU.buy(); buildBuy(); } return true;
 }
 function openBuy() { if (!canBuy()) { subMsg(G.mode === 'bomb' ? 'Ostoaika on päättynyt' : G.mode === 'zombie' ? 'Voit ostaa vain aaltojen välillä' : ''); return; } P.ui = true; document.exitPointerLock && document.exitPointerLock(); P.fireHeld = false; buildBuy(); $('buy').classList.remove('hidden'); }
 function closeBuy(relock) { if ($('buy').classList.contains('hidden')) return; $('buy').classList.add('hidden'); P.ui = false; if (relock && G.running && !G.paused) lockPointer(); }
@@ -3518,7 +4008,7 @@ function toggleBuy() { if ($('buy').classList.contains('hidden')) openBuy(); els
 /* ---------- Pistetaulu & loppunäyttö ---------- */
 function teamTable(team) {
   const rows = teamActors(team).slice().sort((a, b) => b.kills - a.kills || a.deaths - b.deaths);
-  return `<table class="tbl ${teamCol(team)}"><tr><th>${TEAMNAME[team]}</th><th>${G.mode === 'arms' ? 'TASO' : 'RAHA'}</th><th>TAPOT</th><th>KUOLEMAT</th><th>TILA</th></tr>` + rows.map(a => `<tr class="${a.isPlayer ? 'me' : ''}${a.alive ? '' : ' dead'}"><td>${a.op && OPS[a.op] ? `<span style="color:${OPS[a.op].col}">${OPS[a.op].icon}</span> ` : ''}${a.name}${a.ai && a.ai.persona && !a.zombie ? ` <small style="color:var(--dim);font-size:11px;letter-spacing:.12em">${PERS[a.ai.persona].label}</small>` : ''}</td><td>${G.mode === 'arms' ? (a.lvl || 0) + 1 : a.team === PLAYER.team && G.mode === 'bomb' ? fmtMoney(a.money) : '—'}</td><td>${a.kills}</td><td>${a.deaths}</td><td>${a.alive ? '♥' : '✖'}</td></tr>`).join('') + '</table>';
+  return `<table class="tbl ${teamCol(team)}"><tr><th>${TEAMNAME[team]}</th><th>${G.mode === 'arms' ? 'TASO' : 'RAHA'}</th><th>TAPOT</th><th>KUOLEMAT</th><th>TILA</th></tr>` + rows.map(a => `<tr class="${a.isPlayer ? 'me' : ''}${a.alive ? '' : ' dead'}"><td>${!netOn() && a.op && OPS[a.op] ? `<span style="color:${OPS[a.op].col}">${OPS[a.op].icon}</span> ` : ''}${isHuman(a) && !a.isPlayer ? '<span style="color:var(--acc)">● </span>' : ''}${a.name}${a.ai && a.ai.persona && !a.zombie && !a.remote && !a.human ? ` <small style="color:var(--dim);font-size:11px;letter-spacing:.12em">${PERS[a.ai.persona].label}</small>` : ''}</td><td>${G.mode === 'arms' ? (a.lvl || 0) + 1 : a.team === PLAYER.team && G.mode === 'bomb' ? fmtMoney(a.money) : '—'}</td><td>${a.kills}</td><td>${a.deaths}</td><td>${a.alive ? '♥' : '✖'}</td></tr>`).join('') + '</table>';
 }
 function scoreHtml() {
   if (G.mode === 'zombie') return `<div class="sbh"><span style="color:var(--ct)" class="big">${Z.wave}</span><span>${MAPDEFS[G.mapKey].name} · ZOMBIAALLOT · ${Z.kills} TAPPOA</span><span style="color:var(--t)" class="big">${zombiesAlive() + Z.queue.length}</span></div>` + teamTable('CT');
@@ -3528,17 +4018,17 @@ function scoreHtml() {
 let scoreOn = false;
 function showScore(on) { scoreOn = on; $('score').classList.toggle('hidden', !on); if (on) $('scoreBox').innerHTML = scoreHtml(); }
 function showEndZ() {
-  recordZ(); P.ui = true; document.exitPointerLock && document.exitPointerLock(); closeBuy(false); showScore(false); P.fireHeld = false; const best = ST.bestWave || 0, rec = Z.wave >= best && Z.wave > 0;
+  netEv({ k: 'mend', z: 1 }, null); recordZ(); P.ui = true; document.exitPointerLock && document.exitPointerLock(); closeBuy(false); showScore(false); P.fireHeld = false; const best = ST.bestWave || 0, rec = Z.wave >= best && Z.wave > 0;
   $('endBox').innerHTML = `<div class="res" style="color:#ff6a3d">PELI OHI</div><div class="rs">SELVISIT AALTOON ${Z.wave} · ${Z.kills} ZOMBIA TAPETTU ${rec ? '· UUSI ENNÄTYS!' : '· ENNÄTYS ' + best}</div>` + scoreHtml() + `<div class="acts"><button class="btn2" id="againBtn">PELAA UUDESTAAN</button><button class="btn2" id="menuBtn">VALIKKOON</button></div>`;
-  $('end').classList.remove('hidden'); AU.lose(); E('againBtn').onclick = () => { AU.click(); $('end').classList.add('hidden'); P.ui = false; beginGame(); }; E('menuBtn').onclick = () => { AU.click(); toMenu(); };
+  $('end').classList.remove('hidden'); AU.lose(); E('againBtn').onclick = () => { AU.click(); if (NET.role === 'client') { toast('◈', 'ODOTA ISÄNTÄÄ', 'Isäntä aloittaa uuden ottelun'); return; } $('end').classList.add('hidden'); P.ui = false; beginGame(); }; if (NET.role === 'client') E('againBtn').textContent = 'ISÄNTÄ ALOITTAA UUDEN PELIN'; E('menuBtn').onclick = () => { AU.click(); toMenu(); };
 }
 function showEnd(winner) {
-  recordMatch(winner);
+  netEv({ k: 'mend', w: winner }, null); recordMatch(winner);
   P.ui = true; document.exitPointerLock && document.exitPointerLock(); closeBuy(false); showScore(false); P.fireHeld = false;
   const mine = winner === PLAYER.team, draw = !winner; const col = draw ? '#fff' : (winner === 'CT' ? 'var(--ct)' : 'var(--t)');
   $('endBox').innerHTML = `<div class="res" style="color:${col}">${draw ? 'TASAPELI' : mine ? 'VOITTO' : 'TAPPIO'}</div><div class="rs">${draw ? '' : TEAMNAME[winner] + ' VOITTAVAT OTTELUN'} · ${MAPDEFS[G.mapKey].name}</div>` + scoreHtml() + `<div class="acts"><button class="btn2" id="againBtn">PELAA UUDESTAAN</button><button class="btn2" id="menuBtn">VALIKKOON</button></div>`;
   $('endBox').insertAdjacentHTML('afterbegin', G.pstyle ? `<div class="rs" style="margin-bottom:6px">BOTIT HAVAITSIVAT PELITYYLISI: <b style="color:var(--acc)">${styleName()}</b></div>` : ''); $('end').classList.remove('hidden'); mine ? AU.win() : AU.lose();
-  E('againBtn').onclick = () => { AU.click(); $('end').classList.add('hidden'); P.ui = false; beginGame(); }; E('menuBtn').onclick = () => { AU.click(); toMenu(); };
+  E('againBtn').onclick = () => { AU.click(); if (NET.role === 'client') { toast('◈', 'ODOTA ISÄNTÄÄ', 'Isäntä aloittaa uuden ottelun'); return; } $('end').classList.add('hidden'); P.ui = false; beginGame(); }; if (NET.role === 'client') E('againBtn').textContent = 'ISÄNTÄ ALOITTAA UUDEN PELIN'; E('menuBtn').onclick = () => { AU.click(); toMenu(); };
 }
 
 /* ---------- Tauko ---------- */
@@ -3555,11 +4045,12 @@ function beginGame() {
   $('menu').classList.add('hidden'); $('hud').classList.add('hidden');
   setTimeout(() => { bar.style.width = '45%'; }, 60);
   setTimeout(() => {
-    startMatch(); bar.style.width = '100%'; G.running = true; G.phase = G.phase === 'menu' ? 'freeze' : G.phase;
-    setTimeout(() => { L.classList.add('hidden'); $('hud').classList.remove('hidden'); P.ui = false; applyCrosshair(); if (G.mode === 'bomb') openOpPick(); }, 350);
+    startMatch(); bar.style.width = '100%'; G.running = true; G.phase = G.phase === 'menu' ? 'freeze' : G.phase; if (NET.role === 'host') netBroadcastInit();
+    setTimeout(() => { L.classList.add('hidden'); $('hud').classList.remove('hidden'); P.ui = false; applyCrosshair(); if (G.mode === 'bomb' && !netOn()) openOpPick(); }, 350);
   }, 450);
 }
 function toMenu() {
+  if (netOn()) { netLeave(); if (typeof refreshOnline === 'function') refreshOnline(); }
   AMB.stop(); recordPartial(); clearBarriers(); G.slowT = 0; cvs.classList.remove('slowmo'); G.running = false; P._hid = null; P.camS = null; cvs.classList.remove('kc'); G.phase = 'menu'; G.paused = false; P.ui = false; document.exitPointerLock && document.exitPointerLock();
   ['pause', 'end', 'buy', 'score', 'clickGo'].forEach(i => $(i).classList.add('hidden')); $('hud').classList.add('hidden'); $('menu').classList.remove('hidden'); clearActors(); if (G.mapSel === 'random') G.mapKey = pick(Object.keys(MAPDEFS)); buildWorld(G.mapKey); spawnMenuBots(); showVM(null); refreshHome(); showPage('home');
   if (S.music > 0 && AU.ctx) MUS.start();
@@ -3653,7 +4144,7 @@ function syncPlayUI() {
 }
 function showPage(name) {
   AU.click(); document.querySelectorAll('.nbtn').forEach(x => x.classList.toggle('active', x.dataset.pg === name)); document.querySelectorAll('.page').forEach(p => p.classList.remove('show')); $('pg-' + name).classList.add('show');
-  if (name === 'settings') buildSettings($('setBody')); if (name === 'home') refreshHome(); if (name === 'play') { buildOpCards(); persistCfg(); } if (name === 'profile') buildProfile();
+  if (name === 'settings') buildSettings($('setBody')); if (name === 'home') refreshHome(); if (name === 'play') { buildOpCards(); persistCfg(); } if (name === 'profile') buildProfile(); if (name === 'online') buildOnline();
 }
 function buildOpCards() {
   const oc = $('opCards'); if (!oc) return; oc.innerHTML = ''; const lv = levelInfo().lv;
@@ -3674,7 +4165,7 @@ function initMenu() {
   buildOpCards();
   cards('mapCards', v => { G.mapSel = v; if (v !== 'random') { G.mapKey = v; buildWorld(v); spawnMenuBots(); } });
   $('startBtn').onclick = () => { AU.click(); beginGame(); }; $('quickBtn').onclick = () => { AU.click(); beginGame(); };
-  $('customBtn').onclick = () => showPage('play'); $('setBtn2').onclick = () => showPage('settings'); $('topchip').onclick = () => showPage('profile');
+  $('customBtn').onclick = () => showPage('play'); $('onlineBtn').onclick = () => showPage('online'); $('setBtn2').onclick = () => showPage('settings'); $('topchip').onclick = () => showPage('profile');
   document.querySelectorAll('.nbtn,.card,.seg button,.startbtn,.btn2,#musicBtn,#topchip').forEach(e => e.addEventListener('mouseenter', () => AU.hover()));
   $('musicBtn').onclick = () => { AU.init(); S.music = S.music > 0 ? 0 : .5; saveSettings(); AU.setVol(); if (S.music > 0) MUS.start(); else MUS.stop(); $('musicBtn').style.opacity = S.music > 0 ? 1 : .5; };
   $('musicBtn').style.opacity = S.music > 0 ? 1 : .5;
@@ -3824,16 +4315,17 @@ function perfGuard(raw) {
   if (document.visibilityState !== 'visible' || raw > .25 || raw <= 0) return; PERF.n++; PERF.sum += raw;
   if (PERF.n >= 90) { const avg = PERF.sum / PERF.n; PERF.n = 0; PERF.sum = 0; if (avg > .042 && PERF.scale > .55) { PERF.scale *= .82; renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2) * (S.renderScale || 1) * PERF.scale); renderer.setSize(innerWidth, innerHeight); toast('⚙', 'SUORITUSKYKY', 'Kuvan tarkkuutta laskettiin automaattisesti (' + Math.round(PERF.scale * 100) + ' %)'); } }
 }
+function stepGame(dt) { if (NET.role === 'client') updateClientGame(dt); else updateGame(dt); }
 function frame(now) {
   requestAnimationFrame(frame); const raw = (now - lastT) / 1000; let dt = Math.min(.05, raw); lastT = now; if (!(dt > 0)) dt = .016;
   try { pollPad(dt); } catch (e) { reportErr(e, 'ohjain'); }
   if (G.replay) { try { updateReplay(dt); } catch (e) { reportErr(e, 'uusinta'); } try { render(dt); } catch (e) { reportErr(e, 'kuva'); } return; }
   if (G.phase === 'menu') { window.drawDust && window.drawDust(now / 1000); try { render(dt); } catch (e) { reportErr(e, 'valikko'); } return; }
   perfGuard(raw);
-  const active = G.running && !G.paused && (P.locked || P.ui || PAD.mode);
+  const active = G.running && ((!G.paused && (P.locked || P.ui || PAD.mode)) || netOn());
   const cg = $('clickGo'); const needClick = G.running && !G.paused && !P.locked && !P.ui && !PAD.mode && $('loading').classList.contains('hidden'); cg.classList.toggle('hidden', !needClick);
   if (active) {
-    try { updateGame(dt); } catch (e) { reportErr(e, 'peli'); }
+    try { stepGame(dt); } catch (e) { reportErr(e, 'peli'); }
     try { updateHUD(dt); if (scoreOn) { scoreT -= dt; if (scoreT <= 0) { scoreT = .3; $('scoreBox').innerHTML = scoreHtml(); } } } catch (e) { reportErr(e, 'HUD'); }
   }
   if (G.running) { LIS.x = camera.position.x; LIS.z = camera.position.z; LIS.yaw = camera.rotation.y; }
@@ -3842,10 +4334,10 @@ function frame(now) {
 let scoreT = 0;
 
 function init() {
-  PROG.init(); applyHudScale(); loadCfg(); initRenderer(); initFX(); initVM(); buildWorld(G.mapKey); spawnMenuBots(); initMenu(); initInput(); initPad(); applyCrosshair(); showVM(null);
+  PROG.init(); applyHudScale(); loadCfg(); initRenderer(); initFX(); initVM(); buildWorld(G.mapKey); spawnMenuBots(); initMenu(); initOnlineUi(); initInput(); initPad(); applyCrosshair(); showVM(null);
   // lataa jaetut ominaisuudet valintaan
   requestAnimationFrame(frame);
-  window.SFZ = { G, P, K, S, get PLAYER() { return PLAYER; }, get ACT() { return ACT; }, get MAP() { return MAP; }, beginGame, startMatch, toMenu, FF, rayWorld, los, SMOKES, GR, WEAPONS };
+  window.SFZ = { NET, byNid, stepGame, G, P, K, S, get PLAYER() { return PLAYER; }, get ACT() { return ACT; }, get MAP() { return MAP; }, beginGame, startMatch, toMenu, FF, rayWorld, los, SMOKES, GR, WEAPONS };
 }
 init();
 
