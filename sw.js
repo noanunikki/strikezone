@@ -5,7 +5,7 @@
    Updates:   a new worker WAITS (no skipWaiting on install). The page shows a toast in the menu and posts SKIP_WAITING on user click,
               so a running match is never replaced underneath the player. */
 'use strict';
-const BUILD_ID = '2026-10-14.ea4c80114b';
+const BUILD_ID = '2026-10-14.e6653a8db0';
 const SHELL = 'sfz-shell-' + BUILD_ID, RT = 'sfz-rt-v1';
 const PRECACHE = ["index.html", "apple-touch-icon.png", "favicon.svg", "icon-192.png", "icon-32.png", "icon-512.png", "icon-maskable-512.png", "logo.png", "manifest.webmanifest", "wordmark.png"];
 const LIBS = ['https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.2/peerjs.min.js'];
@@ -65,6 +65,7 @@ self.addEventListener('fetch', e => {
   const u = new URL(req.url);
   if (u.origin === self.location.origin) {
     if (req.mode === 'navigate') return e.respondWith(navigate(req));
+    if (/\/voice_[A-Za-z0-9_]+\.mp3$/.test(u.pathname)) return e.respondWith(staleWhileRevalidate(req).catch(() => fetch(req))); /* perf7: voice lines (fetched via fetch(), no Range) are cached after first use: works offline and on flaky mobile data */
     return e.respondWith((async () => (await (await caches.open(SHELL)).match(req, MATCH)) || fetch(req))());
   }
   if (IMMUTABLE_HOSTS.includes(u.hostname)) return e.respondWith(cacheFirst(req, RT, req.mode !== 'no-cors').catch(() => fetch(req)));
