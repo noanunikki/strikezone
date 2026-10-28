@@ -5,11 +5,11 @@
    Updates:   a new worker WAITS (no skipWaiting on install). The page shows a toast in the menu and posts SKIP_WAITING on user click,
               so a running match is never replaced underneath the player. */
 'use strict';
-const BUILD_ID = '2026-10-27.dd9ce9c3ff';
+const BUILD_ID = '2026-10-28.cd250ed4dd';
 const SHELL = 'sfz-shell-' + BUILD_ID, RT = 'sfz-rt-v1';
 const PRECACHE = ["index.html", "apple-touch-icon.png", "favicon.svg", "icon-192.png", "icon-32.png", "icon-512.png", "icon-maskable-512.png", "logo.png", "manifest.webmanifest", "wordmark.png"];
 const LIBS = ['https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.2/peerjs.min.js'];
-const FONTS_CSS = 'https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@600;800;900&display=swap';
+const FONTS_CSS = 'https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@600;800;900&family=Barlow+Condensed:wght@500;600;700;800&display=swap';
 const IMMUTABLE_HOSTS = ['cdnjs.cloudflare.com', 'fonts.gstatic.com'];
 const MATCH = { ignoreSearch: true, ignoreVary: true };
 
