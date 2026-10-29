@@ -2,10 +2,11 @@
    Strategy:  app shell (index.html + manifest + icons) = precache, cache-first, versioned cache name (old ones deleted on activate)
               cdnjs three.js / peerjs and Google Fonts = runtime cache (immutable URLs: cache-first; font CSS: stale-while-revalidate)
               everything else (PeerJS signaling over HTTP, anything unknown) = untouched network. WebSockets never pass through a worker.
-   Updates:   a new worker WAITS (no skipWaiting on install). The page (head/web_30_pwa.html) applies it automatically (SKIP_WAITING message) once the player is calm
-              in the menu - never during a match/lobby/typing - so a running match is never replaced underneath the player. */
+   Updates:   NEVER automatic for the player: the page is not reloaded and no prompt is shown. A new worker activates silently (skipWaiting + clients.claim: the open page keeps
+              running as it is) and navigations are network-first with a conditional request (ETag -> 304 when nothing changed), so ONE manual reload brings the newest build;
+              offline / slow network (>5 s) falls back to the cached shell. */
 'use strict';
-const BUILD_ID = '2026-10-29.9605b315aa';
+const BUILD_ID = '2026-10-29.b1bc950a39';
 const SHELL = 'sfz-shell-' + BUILD_ID, RT = 'sfz-rt-v1';
 const PRECACHE = ["index.html", "apple-touch-icon.png", "favicon.svg", "icon-192.png", "icon-32.png", "icon-512.png", "icon-maskable-512.png", "logo.png", "manifest.webmanifest", "wordmark.png"];
 const LIBS = ['https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.2/peerjs.min.js'];
@@ -25,6 +26,7 @@ self.addEventListener('install', e => {
       const urls = [...(await r.text()).matchAll(/\/\*\s*latin\s*\*\/\s*@font-face\s*\{[^}]*?url\((https:[^)]+)\)/g)].map(m => m[1]);
       await Promise.allSettled(urls.map(grab));
     })()]);
+      await self.skipWaiting(); /* activate silently: no waiting state, no prompt; the running page is never reloaded */
   })());
 });
 
@@ -43,7 +45,16 @@ async function navigate(req) {
   const shell = await caches.open(SHELL);
   const u = new URL(req.url), root = new URL('./', self.registration.scope).href;
   const isApp = u.href.split(/[?#]/)[0] === root || /\/(index|strikezone)\.html$/.test(u.pathname);
-  if (isApp) { const hit = await shell.match('index.html', MATCH) || await shell.match(root, MATCH); if (hit) return hit; }
+  if (isApp) {
+    /* network-first with revalidation: a manual reload gets the newest build at once (304 = tiny when unchanged); cached shell when offline or slower than 5 s */
+    const idx = new URL('index.html', root).href;
+    try {
+      const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 5000);
+      const res = await fetch(new Request(idx, { cache: 'no-cache', signal: ctl.signal })); clearTimeout(tm);
+      if (res.ok) { try { await shell.put(idx, res.clone()); } catch (_) { } return res; }
+    } catch (_) { /* offline / timeout */ }
+    const hit = await shell.match('index.html', MATCH) || await shell.match(root, MATCH); if (hit) return hit;
+  }
   try { return await fetch(req); } catch (err) { const hit = await shell.match('index.html', MATCH); if (hit) return hit; throw err; }
 }
 

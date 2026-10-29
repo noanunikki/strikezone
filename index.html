@@ -82,7 +82,7 @@
 
 <script>
 /* web boot guard: runs before the game, independent of game internals. Build stamp, storage safe mode, error reporter, WebGL preflight. */
-const BUILD_ID = '2026-10-29.9605b315aa';
+const BUILD_ID = '2026-10-29.b1bc950a39';
 (function () {
   'use strict';
   var W = window, D = document;
@@ -122,16 +122,15 @@ const BUILD_ID = '2026-10-29.9605b315aa';
       lib_h: 'Pelin kirjastoja ei saatu ladattua', lib_p: 'Three.js tai PeerJS ei latautunut. Tämä tapahtuu yleensä, kun verkkoyhteys puuttuu ensimmäisellä käynnistyksellä tai mainosesto estää cdnjs.cloudflare.com-osoitteen.',
       lib_l: ['Tarkista nettiyhteys ja lataa sivu uudelleen.', 'Salli cdnjs.cloudflare.com mainosestossa / palomuurissa.', 'Kun peli on kerran latautunut, yksinpeli toimii myös ilman verkkoa.'],
       st_h: 'Peli ei käynnistynyt', st_p: 'Käynnistyksessä tapahtui odottamaton virhe.', st_l: ['Lataa sivu uudelleen (Ctrl/Cmd+Shift+R).', 'Jos virhe toistuu, kopioi tiedot ja ilmoita ne kehittäjälle.'],
-      nostore: 'Selaimen tallennus ei ole käytössä (yksityinen selaus?) – asetukset ja edistyminen eivät säily.', soft: 'Selain käyttää ohjelmallista piirtoa – ota laitteistokiihdytys käyttöön, jotta peli pyörii sujuvasti.', ctx: 'Grafiikkayhteys ei palautunut. Lataa sivu uudelleen.',
-      upd: 'Uusi versio on valmis.', updnow: 'Päivitä nyt', later: 'Myöhemmin', updating: 'Päivitetään uuteen versioon…' },
+      nostore: 'Selaimen tallennus ei ole käytössä (yksityinen selaus?) – asetukset ja edistyminen eivät säily.', soft: 'Selain käyttää ohjelmallista piirtoa – ota laitteistokiihdytys käyttöön, jotta peli pyörii sujuvasti.', ctx: 'Grafiikkayhteys ei palautunut. Lataa sivu uudelleen.' },
     en: { err: 'Minor error (#%n) – the game keeps running.', copy: 'Copy details', copied: 'Copied', close: 'Close', reload: 'Reload page', loop: 'The game hit a repeating error. Reload the page if something stops working.',
       gl_h: 'Graphics could not start', gl_p: 'Your browser did not provide the WebGL 3D graphics this game needs.',
       gl_l: ['Enable hardware acceleration in your browser settings (Chrome / Brave / Edge: Settings → System → Use hardware acceleration; Firefox: Settings → General → Performance).', 'Update your browser and graphics drivers, then restart the browser.', 'Try another browser (Chrome, Edge, Firefox or Safari).', 'Virtual machines and remote desktops may have no 3D acceleration at all.'],
       lib_h: 'Game libraries failed to load', lib_p: 'Three.js or PeerJS did not load. This usually means there was no network connection on the very first visit, or an ad blocker is blocking cdnjs.cloudflare.com.',
       lib_l: ['Check your internet connection and reload the page.', 'Allow cdnjs.cloudflare.com in your ad blocker / firewall.', 'After one successful load, single player also works offline.'],
       st_h: 'The game did not start', st_p: 'An unexpected error happened during startup.', st_l: ['Reload the page (Ctrl/Cmd+Shift+R).', 'If it keeps happening, copy the details and send them to the developer.'],
-      nostore: 'Browser storage is unavailable (private browsing?) – settings and progress will not be saved.', soft: 'The browser is using software rendering – enable hardware acceleration for smooth play.', ctx: 'Graphics did not recover. Reload the page.',
-      upd: 'A new version is ready.', updnow: 'Update now', later: 'Later', updating: 'Updating to the new version…' }
+      nostore: 'Browser storage is unavailable (private browsing?) – settings and progress will not be saved.', soft: 'The browser is using software rendering – enable hardware acceleration for smooth play.', ctx: 'Graphics did not recover. Reload the page.'
+    }
   };
   function t(k, n) { var s = (T[lang] || T.fi)[k]; return typeof s === 'string' ? s.replace('%n', n) : s; }
 
@@ -226,7 +225,7 @@ const BUILD_ID = '2026-10-29.9605b315aa';
 </script>
 
 <script>
-/* web PWA glue: manifest link (http/https only), service-worker registration, automatic update flow (applies itself when the player is calm in the menu; never reloads during a match, lobby or while typing). */
+/* web PWA glue: manifest link (http/https only), service-worker registration. Updates are manual: the page never reloads itself or prompts; a reload by the player brings the newest build. */
 (function () {
   'use strict';
   var W = window, D = document, L = location, N = navigator;
@@ -238,56 +237,9 @@ const BUILD_ID = '2026-10-29.9605b315aa';
     if (W.caches) caches.keys().then(function (ks) { ks.forEach(function (k) { if (k.indexOf('sfz-') === 0) caches.delete(k); }); });
     return;
   }
-  var web = function () { return W.SFZ_WEB; }, waiting = null, reloading = false, pending = false, poll = 0, lastCheck = 0, calm = 0, regRef = null, manualSnooze = false;
-  /* the menu is visible and no match/lobby is running (read defensively: only DOM + the documented SFZ debug handle) */
-  function idleInMenu() {
-    try {
-      var m = D.getElementById('menu'); if (!m || m.classList.contains('hidden') || getComputedStyle(m).display === 'none') return false;
-      var S = W.SFZ; if (!S) return false; if (S.G && S.G.running) return false; if (S.NET && S.NET.role && S.NET.role !== 'off') return false;
-      return true;
-    } catch (e) { return false; }
-  }
-  /* the player is typing something (name, room code, search): never reload under their hands */
-  function typing() {
-    try { var a = D.activeElement; return !!(a && (a.tagName === 'TEXTAREA' || (a.tagName === 'INPUT' && /^(text|search|email|url|tel|password|number|)$/i.test(a.type || ''))) && String(a.value || '').length); } catch (e) { return false; }
-  }
-  function apply() {
-    if (!waiting) return; reloading = true;
-    try { waiting.postMessage({ type: 'SKIP_WAITING' }); } catch (e) { }
-    setTimeout(function () { if (reloading) L.reload(); }, 4000); /* safety net if controllerchange never fires */
-  }
-  /* loop guard: automatic updates are limited to 2 attempts per 10 minutes per tab; after that the old manual prompt is used */
-  function attempts() { try { var o = JSON.parse(W.sessionStorage.getItem('sfz_autoupd') || 'null'); return o && Date.now() - o.t < 600000 ? o.n : 0; } catch (e) { return 0; } }
-  function bump() { try { W.sessionStorage.setItem('sfz_autoupd', JSON.stringify({ n: attempts() + 1, t: Date.now() })); } catch (e) { } }
-  function check() {
-    var w = web(); if (!waiting || !w || reloading) return;
-    var calmNow = idleInMenu() && !typing();
-    if (!calmNow) { calm = 0; pending = false; w.drop('upd'); manualSnooze = false; return; } /* match/lobby/typing: wait, try again when the menu is calm */
-    if (attempts() >= 2) { /* auto-update did not stick: fall back to the explicit prompt */
-      if (manualSnooze || w.has('upd')) return;
-      w.toast(w.t('upd'), { slot: 'upd', buttons: [w.btn(w.t('updnow'), apply), w.btn(w.t('later'), function () { manualSnooze = true; }, 1)], onClose: function () { manualSnooze = true; } }); return;
-    }
-    if (!calm) calm = Date.now();
-    if (Date.now() - calm < 2500 || pending) return; /* calm in the menu for 2.5 s, then update by itself */
-    pending = true; w.toast(w.t('updating'), { slot: 'upd', ms: 4000 });
-    setTimeout(function () { if (waiting && idleInMenu() && !typing()) { bump(); apply(); } else { pending = false; calm = 0; w.drop('upd'); } }, 1100);
-  }
-  function offer(reg) { waiting = reg.waiting; if (!poll) poll = setInterval(check, 1500); }
-  N.serviceWorker.addEventListener('controllerchange', function () { if (reloading) L.reload(); });
-  function pollUpdate() { if (regRef && D.visibilityState === 'visible') { lastCheck = Date.now(); regRef.update().catch(function () { }); } }
+  /* no update logic in the page on purpose: the page never reloads itself and never prompts. A new build is picked up when the player reloads the page (see static/sw.js). */
   function register() {
-    N.serviceWorker.register('sw.js', { scope: './', updateViaCache: 'none' }).then(function (reg) {
-      regRef = reg;
-      if (reg.waiting && N.serviceWorker.controller) offer(reg);
-      reg.addEventListener('updatefound', function () {
-        var w = reg.installing; if (!w) return;
-        w.addEventListener('statechange', function () { if (w.state === 'installed' && N.serviceWorker.controller) offer(reg); });
-      });
-      /* look for a new version often: when the tab becomes visible again (after 2 min), when the network returns, and every 10 minutes while open */
-      D.addEventListener('visibilitychange', function () { if (D.visibilityState === 'visible' && Date.now() - lastCheck > 120000) pollUpdate(); });
-      W.addEventListener('online', pollUpdate); setInterval(pollUpdate, 600000);
-      lastCheck = Date.now();
-    }).catch(function (e) { if (W.SFZ_ERR) W.SFZ_ERR.log.push({ t: Date.now(), msg: 'sw register failed: ' + (e && e.message) }); });
+    N.serviceWorker.register('sw.js', { scope: './', updateViaCache: 'none' }).catch(function (e) { if (W.SFZ_ERR) W.SFZ_ERR.log.push({ t: Date.now(), msg: 'sw register failed: ' + (e && e.message) }); });
   }
   /* register after the game has booted so the worker's precache download never competes with startup */
   W.addEventListener('load', function () { (W.requestIdleCallback || function (f) { setTimeout(f, 2500); })(register, { timeout: 6000 }); });
