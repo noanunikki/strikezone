@@ -2,11 +2,11 @@
    Strategy:  app shell (index.html + manifest + icons) = precache, cache-first, versioned cache name (old ones deleted on activate)
               cdnjs three.js / peerjs and Google Fonts = runtime cache (immutable URLs: cache-first; font CSS: stale-while-revalidate)
               everything else (PeerJS signaling over HTTP, anything unknown) = untouched network. WebSockets never pass through a worker.
-   Updates:   NEVER automatic for the player: the page is not reloaded and no prompt is shown. A new worker activates silently (skipWaiting + clients.claim: the open page keeps
-              running as it is) and navigations are network-first with a conditional request (ETag -> 304 when nothing changed), so ONE manual reload brings the newest build;
-              offline / slow network (>5 s) falls back to the cached shell. */
+   Updates:   a new worker WAITS (no skipWaiting on install); the page shows the "Päivitä nyt" button (head/web_30_pwa.html) and only the player's click posts SKIP_WAITING, then the
+              page reloads. The page can also ask the worker for its BUILD_ID ('BUILD' message) so an already-current waiting worker is not offered. Navigations are network-first
+              with a conditional request (ETag -> 304 when nothing changed), so a plain manual reload also brings the newest build; offline / slow network (>5 s) uses the cached shell. */
 'use strict';
-const BUILD_ID = '2026-10-30.033864a0ba';
+const BUILD_ID = '2026-10-31.7c4161b009';
 const SHELL = 'sfz-shell-' + BUILD_ID, RT = 'sfz-rt-v1';
 const PRECACHE = ["index.html", "apple-touch-icon.png", "favicon.svg", "icon-192.png", "icon-32.png", "icon-512.png", "icon-maskable-512.png", "logo.png", "manifest.webmanifest", "wordmark.png"];
 const LIBS = ['https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', 'https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.2/peerjs.min.js'];
@@ -26,7 +26,6 @@ self.addEventListener('install', e => {
       const urls = [...(await r.text()).matchAll(/\/\*\s*latin\s*\*\/\s*@font-face\s*\{[^}]*?url\((https:[^)]+)\)/g)].map(m => m[1]);
       await Promise.allSettled(urls.map(grab));
     })()]);
-      await self.skipWaiting(); /* activate silently: no waiting state, no prompt; the running page is never reloaded */
   })());
 });
 
@@ -37,7 +36,11 @@ self.addEventListener('activate', e => {
   })());
 });
 
-self.addEventListener('message', e => { if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting(); });
+self.addEventListener('message', e => {
+  const d = e.data; if (!d) return;
+  if (d.type === 'SKIP_WAITING') self.skipWaiting();
+  else if (d.type === 'BUILD' && e.ports && e.ports[0]) e.ports[0].postMessage({ build: BUILD_ID });
+});
 
 const putSafe = async (cache, req, res) => { try { if (res && (res.ok || res.type === 'opaque')) await cache.put(req, res.clone()); } catch (_) { /* quota: ignore */ } };
 
